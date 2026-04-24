@@ -1189,3 +1189,61 @@ textarea,
   color: var(--text-muted);
   margin-top: 0.2rem;
 }
+
+/* =========================================================
+   Responsive fixes: mobile alignment and overflow
+   - Reduce horizontal padding on very narrow screens so cards appear centered
+   - Allow form controls and flex items to shrink to avoid horizontal scroll
+   - Improve word-wrapping for long titles/notes
+   ========================================================= */
+
+@media (max-width: 600px) {
+  .app {
+    padding-left: 0.9rem;
+    padding-right: 0.9rem;
+  }
+
+  /* ensure grid children stretch to container and are visually centered */
+  .author-grid,
+  .gr-grid {
+    padding: 0;
+    justify-items: stretch;
+  }
+
+  .author-card,
+  .gr-card {
+    width: 100%;
+  }
+}
+
+/* Allow form controls in TBR to shrink and avoid forcing a wider grid */
+.tbr-form input,
+.tbr-form select,
+.tbr-form button {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Ensure TBR and other list items don't cause horizontal overflow */
+.tbr-item,
+.book-item,
+.gr-card {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.tbr-title,
+.book-title,
+.gr-title,
+.gr-review {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Fallback: prevent accidental page-level horizontal scroll on tiny viewports */
+@media (max-width: 420px) {
+  .app {
+    overflow-x: hidden;
+  }
+}
