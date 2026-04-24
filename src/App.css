@@ -1,6 +1,7 @@
-/* ============================================
-   Book Tracker — Cozy Paper Theme
-   ============================================ */
+/* =========================================================
+   Book Tracker — three themes (terminal / cyber / noir)
+   All dark. Accent + type differ per theme.
+   ========================================================= */
 
 * {
   box-sizing: border-box;
@@ -8,64 +9,269 @@
   padding: 0;
 }
 
+/* Terminal — retro CRT, amber, mono-first */
 :root {
-  --bg: #f5f0e8;
-  --surface: #faf7f2;
-  --surface-hover: #f0ebe1;
-  --border: #e0d8c8;
-  --border-strong: #c9bfa8;
-  --text: #3d3425;
-  --text-muted: #8c7e6a;
-  --accent: #8b5e3c;
-  --accent-light: #a87c5a;
-  --upcoming: #5a7c3a;
-  --overdue: #b54a3a;
-  --released: #8c7e6a;
-  --shadow: rgba(60, 50, 30, 0.06);
+  --bg: #0e1013;
+  --surface: #171a1f;
+  --surface-hover: #1e232a;
+  --border: #2a2f36;
+  --border-strong: #3a424c;
+  --text: #d8d4c9;
+  --text-muted: #7a828d;
+  --accent: #ddb860;
+  --accent-dim: #8a6d35;
+  --accent-glow: rgba(221, 184, 96, 0.28);
+  --accent-contrast: #0e1013;
+  --upcoming: #8ab060;
+  --overdue: #d97559;
+  --released: #7a828d;
+  --shadow: rgba(0, 0, 0, 0.55);
+  --font-display: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-body: "IBM Plex Serif", Georgia, serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --radius: 4px;
+  --toolbar-texture: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 3px,
+    rgba(221, 184, 96, 0.045) 3px,
+    rgba(221, 184, 96, 0.045) 4px
+  );
+  color-scheme: dark;
 }
 
-[data-theme="dark"] {
-  --bg: #1a1612;
-  --surface: #241f19;
-  --surface-hover: #2e2720;
-  --border: #3a3228;
-  --border-strong: #4a4035;
-  --text: #d4cabb;
-  --text-muted: #8c7e6a;
-  --accent: #c4956a;
-  --accent-light: #d4a87a;
-  --upcoming: #7ea856;
-  --overdue: #d46a5a;
-  --released: #8c7e6a;
-  --shadow: rgba(0, 0, 0, 0.2);
+/* Cyber — near-black navy, cyan neon, geometric sans */
+/* Removed alternate themes; app uses a single terminal theme. */
+
+/* =========================================================
+   Keyframes
+   ========================================================= */
+
+@keyframes tab-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
+
+@keyframes section-body-in {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes star-reveal {
+  from {
+    opacity: 0;
+    transform: translateX(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes priority-pulse {
+  0% {
+    box-shadow: 0 0 0 0 var(--accent-glow);
+  }
+  70% {
+    box-shadow: 0 0 0 6px transparent;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+@keyframes candle-flicker {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  48% {
+    opacity: 0.92;
+  }
+  52% {
+    opacity: 1;
+  }
+  63% {
+    opacity: 0.96;
+  }
+}
+
+@keyframes cursor-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* =========================================================
+   Base layout + typography
+   ========================================================= */
 
 body {
-  font-family: 'Literata', 'Georgia', 'Times New Roman', serif;
+  font-family: var(--font-body);
   font-optical-sizing: auto;
   background: var(--bg);
   color: var(--text);
-  line-height: 1.65;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
 }
 
 .app {
   max-width: 860px;
   margin: 0 auto;
-  padding: 2.5rem 1.25rem;
+  padding: 2rem 1.25rem 3rem;
 }
 
-/* Header */
+/* Terminal-style overlays and accessibility polish */
+.app {
+  position: relative;
+}
+
+/* subtle CRT scanlines + vignette */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: linear-gradient(
+    rgba(255, 255, 255, 0.02) 1px,
+    transparent 1px
+  );
+  background-size: 100% 3px;
+  mix-blend-mode: overlay;
+  opacity: 0.06;
+  z-index: 40;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 55%,
+    rgba(0, 0, 0, 0.55) 100%
+  );
+  z-index: 39;
+}
+
+/* container bezel / glow */
+.app::before {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  border-radius: calc(var(--radius) + 8px);
+  pointer-events: none;
+}
+
+/* selection and caret */
+::selection {
+  background: color-mix(in oklab, var(--accent) 30%, transparent);
+  color: var(--accent-contrast);
+}
+input,
+textarea,
+.search-input {
+  caret-color: var(--accent);
+}
+
+/* focus-visible accessibility style */
+:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--accent) 40%, transparent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* accent pulse for header */
+@keyframes accent-pulse {
+  0% {
+    text-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  }
+  50% {
+    text-shadow: 0 0 12px var(--accent-glow);
+  }
+  100% {
+    text-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  }
+}
+.app-header h1 {
+  animation: accent-pulse 4s ease-in-out infinite;
+}
+
+/* tabs and buttons get soft glow */
+.tab-active {
+  box-shadow: 0 6px 18px var(--accent-glow);
+}
+.btn-small:hover {
+  box-shadow: 0 0 10px var(--accent-glow);
+}
+
+/* improved inputs and small transitions */
+.search-input,
+.filter-group select,
+.book-item {
+  transition:
+    box-shadow 0.18s,
+    transform 0.18s,
+    border-color 0.18s;
+}
+
+/* scrollbar styling */
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.05),
+    rgba(255, 255, 255, 0.02)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  border-radius: 999px;
+}
+
 .app-header {
   text-align: center;
-  margin-bottom: 2.5rem;
+  margin-bottom: 0.9rem;
 }
 
 .app-header h1 {
-  font-size: 2rem;
+  font-family: var(--font-display);
+  font-size: 1.9rem;
   font-weight: 700;
   letter-spacing: -0.01em;
   color: var(--text);
+}
+
+/* Terminal: blinking cursor after the title */
+.app-header h1::after {
+  content: "_";
+  display: inline-block;
+  color: var(--accent);
+  margin-left: 0.15rem;
+  animation: cursor-blink 1s steps(2, end) infinite;
 }
 
 .subtitle {
@@ -75,14 +281,165 @@ body {
   margin-top: 0.3rem;
 }
 
-/* Search Bar */
-.search-bar {
+/* =========================================================
+   Sticky sub-header toolbar
+   ========================================================= */
+
+.app-toolbar {
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 20;
   background: var(--bg);
-  padding: 0.75rem 0 0.85rem;
-  margin-bottom: 1.75rem;
+  margin-bottom: 1.5rem;
+  padding: 0.5rem 0 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.app-toolbar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--toolbar-texture);
+  pointer-events: none;
+  opacity: 0.9;
+}
+
+/* Cyber toolbar styles removed — single terminal theme in use */
+
+.auth-bar {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* =========================================================
+   Tabs
+   ========================================================= */
+
+.tabs {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  gap: 0.25rem;
+  margin-top: 0.75rem;
+}
+
+.tab {
+  font-family: var(--font-display);
+  font-size: 0.88rem;
+  padding: 0.5rem 1rem;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
+  margin-bottom: -1px;
+  letter-spacing: 0.02em;
+}
+
+.tab:hover {
+  color: var(--text);
+}
+
+.tab-active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* Per-theme tab effects removed (terminal theme only). */
+
+/* =========================================================
+   Theme picker
+   ========================================================= */
+
+/* Theme picker controls removed from styles */
+
+/* =========================================================
+   Tab panes
+   ========================================================= */
+
+.tab-pane {
+  display: none;
+}
+
+.tab-pane-active {
+  display: block;
+  animation: tab-fade-in 160ms ease-out both;
+}
+
+/* =========================================================
+   Buttons
+   ========================================================= */
+
+.btn-small {
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  padding: 0.35rem 0.7rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--accent);
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    box-shadow 0.15s;
+  letter-spacing: 0.02em;
+}
+
+.btn-small:hover {
+  background: var(--surface-hover);
+  border-color: var(--accent-dim);
+}
+
+.btn-small:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* theme-specific button hover removed */
+
+.btn-secondary {
+  color: var(--text-muted);
+}
+.btn-danger {
+  color: var(--overdue);
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.95rem;
+  padding: 0 0.25rem;
+  line-height: 1;
+  transition: color 0.15s;
+}
+
+.btn-icon:hover {
+  color: var(--text);
+}
+.btn-icon.btn-danger:hover {
+  color: var(--overdue);
+}
+
+/* =========================================================
+   Authors — search bar
+   ========================================================= */
+
+.search-bar {
+  background: var(--bg);
+  padding: 0.25rem 0 0.85rem;
+  margin-bottom: 1.25rem;
   border-bottom: 1px solid var(--border);
 }
 
@@ -98,12 +455,12 @@ body {
   padding: 0.55rem 0.75rem;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius);
   color: var(--text);
   font-family: inherit;
   font-size: 0.9rem;
   outline: none;
-  transition: border-color 0.2s;
+  transition: border-color 0.15s;
 }
 
 .search-input:focus {
@@ -116,6 +473,7 @@ body {
 }
 
 .count {
+  font-family: var(--font-mono);
   color: var(--text-muted);
   font-size: 0.82rem;
   white-space: nowrap;
@@ -143,7 +501,7 @@ body {
   padding: 0.3rem 0.45rem;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: var(--radius);
   color: var(--text);
   font-family: inherit;
   font-size: 0.82rem;
@@ -155,7 +513,10 @@ body {
   border-color: var(--accent);
 }
 
-/* Author Grid */
+/* =========================================================
+   Authors — cards
+   ========================================================= */
+
 .author-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -168,19 +529,24 @@ body {
   }
 }
 
-/* Author Card */
 .author-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius);
   padding: 1rem 1.1rem;
   box-shadow: 0 1px 3px var(--shadow);
-  transition: box-shadow 0.2s, border-color 0.2s;
+  transition:
+    box-shadow 0.2s,
+    border-color 0.2s,
+    transform 0.2s;
 }
 
 .author-card:hover {
-  border-color: var(--border-strong);
-  box-shadow: 0 2px 8px var(--shadow);
+  border-color: var(--accent-dim);
+  box-shadow:
+    0 3px 12px var(--shadow),
+    0 0 0 1px var(--accent-glow);
+  transform: translateY(-1px);
 }
 
 .author-header {
@@ -192,6 +558,7 @@ body {
 }
 
 .author-name {
+  font-family: var(--font-display);
   font-size: 1.02rem;
   font-weight: 600;
 }
@@ -203,21 +570,23 @@ body {
 }
 
 .author-links a {
+  font-family: var(--font-mono);
   font-size: 0.68rem;
   color: var(--accent);
   text-decoration: none;
   padding: 0.12rem 0.35rem;
   border: 1px solid var(--border);
   border-radius: 3px;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
 }
 
 .author-links a:hover {
   background: var(--surface-hover);
-  color: var(--accent-light);
+  border-color: var(--accent-dim);
 }
 
-/* Book List */
 .book-list {
   list-style: none;
 }
@@ -227,9 +596,9 @@ body {
   justify-content: space-between;
   align-items: baseline;
   gap: 0.5rem;
-  padding: 0.35rem 0;
+  padding: 0.4rem 0;
   border-top: 1px solid var(--border);
-  font-size: 0.88rem;
+  font-size: 0.9rem;
 }
 
 .book-title {
@@ -245,32 +614,34 @@ body {
 }
 
 .book-status {
-  font-size: 0.68rem;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  padding: 0.1rem 0.35rem;
+  letter-spacing: 0.06em;
+  padding: 0.12rem 0.38rem;
   border-radius: 3px;
 }
 
 .status-upcoming {
   color: var(--upcoming);
-  background: rgba(90, 124, 58, 0.1);
+  background: color-mix(in oklab, var(--upcoming) 14%, transparent);
 }
 
 .status-overdue {
   color: var(--overdue);
-  background: rgba(181, 74, 58, 0.1);
+  background: color-mix(in oklab, var(--overdue) 14%, transparent);
 }
 
 .status-released {
   color: var(--released);
-  background: rgba(140, 126, 106, 0.1);
+  background: color-mix(in oklab, var(--released) 14%, transparent);
 }
 
 .book-date {
+  font-family: var(--font-mono);
   color: var(--text-muted);
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   white-space: nowrap;
 }
 
@@ -280,12 +651,11 @@ body {
   font-style: italic;
 }
 
-/* State messages */
 .state-msg {
   grid-column: 1 / -1;
   text-align: center;
   color: var(--text-muted);
-  padding: 3rem 0;
+  padding: 2.5rem 0;
   font-style: italic;
 }
 
@@ -293,60 +663,6 @@ body {
   color: var(--overdue);
 }
 
-/* Auth bar */
-.auth-bar {
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-  margin-top: 0.85rem;
-}
-
-/* Buttons */
-.btn-small {
-  font-family: inherit;
-  font-size: 0.78rem;
-  padding: 0.3rem 0.6rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  color: var(--accent);
-  cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
-}
-
-.btn-small:hover {
-  background: var(--surface-hover);
-  border-color: var(--border-strong);
-}
-
-.btn-secondary {
-  color: var(--text-muted);
-}
-
-.btn-danger {
-  color: var(--overdue);
-}
-
-.btn-icon {
-  background: none;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  font-size: 0.9rem;
-  padding: 0 0.2rem;
-  line-height: 1;
-  transition: color 0.15s;
-}
-
-.btn-icon:hover {
-  color: var(--text);
-}
-
-.btn-icon.btn-danger:hover {
-  color: var(--overdue);
-}
-
-/* Card actions */
 .card-actions {
   display: flex;
   gap: 0.4rem;
@@ -360,31 +676,33 @@ body {
   gap: 0.1rem;
 }
 
-/* Modal */
+/* =========================================================
+   Modal
+   ========================================================= */
+
 .modal-backdrop {
   position: fixed;
   inset: 0;
   z-index: 100;
-  background: rgba(60, 50, 30, 0.4);
+  background: rgba(0, 0, 0, 0.55);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 1rem;
-}
-
-[data-theme="dark"] .modal-backdrop {
-  background: rgba(0, 0, 0, 0.55);
+  animation: tab-fade-in 150ms ease-out;
 }
 
 .modal {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: calc(var(--radius) * 2);
   width: 100%;
   max-width: 420px;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 8px 30px var(--shadow);
+  box-shadow: 0 10px 40px var(--shadow);
 }
 
 .modal-header {
@@ -395,7 +713,8 @@ body {
 }
 
 .modal-header h2 {
-  font-size: 1.1rem;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
   font-weight: 600;
 }
 
@@ -416,7 +735,10 @@ body {
   padding: 0.5rem 1rem 1rem;
 }
 
-/* Forms */
+/* =========================================================
+   Forms
+   ========================================================= */
+
 .crud-form,
 .login-form {
   display: flex;
@@ -436,13 +758,13 @@ body {
 .crud-form input,
 .crud-form select,
 .login-form input {
-  padding: 0.5rem 0.6rem;
+  padding: 0.55rem 0.65rem;
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: var(--radius);
   color: var(--text);
   font-family: inherit;
-  font-size: 0.88rem;
+  font-size: 0.9rem;
   outline: none;
 }
 
@@ -461,21 +783,24 @@ body {
 
 .form-actions button,
 .login-form button {
-  font-family: inherit;
+  font-family: var(--font-display);
   padding: 0.5rem 1rem;
-  border-radius: 4px;
+  border-radius: var(--radius);
   border: 1px solid var(--accent);
   background: var(--accent);
-  color: #faf7f2;
+  color: var(--accent-contrast);
   font-weight: 600;
   font-size: 0.85rem;
   cursor: pointer;
-  transition: background 0.15s;
+  transition:
+    box-shadow 0.15s,
+    transform 0.15s;
+  letter-spacing: 0.02em;
 }
 
 .form-actions button:hover,
 .login-form button:hover {
-  background: var(--accent-light);
+  box-shadow: 0 0 0 2px var(--accent-glow);
 }
 
 .form-actions button:disabled,
@@ -493,4 +818,374 @@ body {
 .form-error {
   color: var(--overdue);
   font-size: 0.8rem;
+}
+
+/* =========================================================
+   Collapsible
+   ========================================================= */
+
+.collapsible {
+  margin-bottom: 1.25rem;
+}
+
+.collapsible-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.5rem 0;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  color: var(--text);
+  font-family: inherit;
+}
+
+.collapsible-header:hover .collapsible-title {
+  color: var(--accent);
+}
+
+.collapsible-chevron {
+  display: inline-block;
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  transition:
+    transform 0.15s ease,
+    color 0.15s ease;
+}
+
+.collapsible-chevron-open {
+  transform: rotate(90deg);
+  color: var(--accent);
+}
+
+.collapsible-title {
+  margin: 0;
+  font-weight: 600;
+  font-family: var(--font-display);
+}
+
+.collapsible-section > .collapsible-header .collapsible-title {
+  font-size: 1.1rem;
+  letter-spacing: 0.02em;
+}
+
+.collapsible-group > .collapsible-header .collapsible-title {
+  font-size: 0.8rem;
+  color: var(--accent);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.collapsible-count {
+  color: var(--text-muted);
+  font-weight: 400;
+  font-family: var(--font-mono);
+}
+
+.collapsible-body {
+  margin-top: 0.5rem;
+  animation: section-body-in 180ms ease-out;
+}
+
+/* =========================================================
+   Library
+   ========================================================= */
+
+.library-page {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Goodreads cards */
+.gr-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.85rem;
+}
+
+@media (min-width: 600px) {
+  .gr-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.gr-card {
+  display: flex;
+  gap: 0.85rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.85rem;
+  box-shadow: 0 1px 3px var(--shadow);
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s,
+    transform 0.15s;
+}
+
+.gr-card:hover {
+  border-color: var(--accent-dim);
+  box-shadow:
+    0 3px 12px var(--shadow),
+    0 0 0 1px var(--accent-glow);
+  transform: translateY(-1px);
+}
+
+.gr-cover {
+  width: 60px;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 3px;
+  flex-shrink: 0;
+  background: var(--surface-hover);
+}
+
+.gr-cover-placeholder {
+  border: 1px dashed var(--border);
+}
+
+.gr-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.gr-title {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.gr-title:hover {
+  color: var(--accent);
+}
+
+.gr-author {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.gr-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.2rem;
+}
+
+.rating {
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
+  animation: star-reveal 320ms ease-out both;
+}
+
+.rating-filled {
+  color: var(--accent);
+}
+.rating-empty {
+  color: var(--border-strong);
+}
+
+.rating-none {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.gr-date {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.gr-review {
+  font-size: 0.85rem;
+  color: var(--text);
+  margin-top: 0.35rem;
+  line-height: 1.55;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* =========================================================
+   TBR
+   ========================================================= */
+
+.tbr-form {
+  display: grid;
+  grid-template-columns: 2fr 1.5fr 1.3fr 1.3fr 2fr auto;
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+}
+
+@media (max-width: 720px) {
+  .tbr-form {
+    grid-template-columns: 1fr 1fr;
+  }
+  .tbr-form button {
+    grid-column: 1 / -1;
+  }
+}
+
+.tbr-form input,
+.tbr-form select {
+  padding: 0.45rem 0.6rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.85rem;
+  outline: none;
+}
+
+.tbr-form input:focus,
+.tbr-form select:focus {
+  border-color: var(--accent);
+}
+
+.tbr-form button {
+  font-family: var(--font-display);
+  padding: 0.45rem 0.9rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--accent-contrast);
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+}
+
+.tbr-form button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.tbr-controls {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.6rem;
+}
+
+.tbr-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.tbr-filter select {
+  padding: 0.3rem 0.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.8rem;
+  outline: none;
+  cursor: pointer;
+  font-style: normal;
+}
+
+.tbr-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.tbr-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.tbr-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.55rem 0.75rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: border-color 0.15s;
+}
+
+.tbr-item:hover {
+  border-color: var(--accent-dim);
+}
+
+.tbr-priority {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.18rem 0.42rem;
+  border-radius: 3px;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+  margin-top: 0.18rem;
+}
+
+.tbr-priority-p1 {
+  color: var(--accent-contrast);
+  background: var(--accent);
+  animation: priority-pulse 2.2s ease-out infinite;
+}
+
+/* per-theme priority tweaks removed; default animation/color remains */
+
+.tbr-priority-p2 {
+  color: var(--accent);
+  background: color-mix(in oklab, var(--accent) 14%, transparent);
+}
+
+.tbr-priority-p3 {
+  color: var(--accent);
+  background: color-mix(in oklab, var(--accent) 8%, transparent);
+}
+
+.tbr-priority-p4 {
+  color: var(--text-muted);
+  background: color-mix(in oklab, var(--text-muted) 10%, transparent);
+}
+
+.tbr-priority-p5 {
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px dashed var(--border);
+}
+
+.tbr-main {
+  min-width: 0;
+  flex: 1;
+}
+
+.tbr-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.tbr-author {
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  font-style: italic;
+}
+
+.tbr-notes {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: 0.2rem;
 }

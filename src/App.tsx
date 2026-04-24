@@ -1,54 +1,86 @@
-import { useState } from 'react'
-import { useAuth } from './hooks/useAuth'
-import { useAuthors } from './hooks/useAuthors'
-import { useTheme } from './hooks/useTheme'
-import { SearchBar } from './components/SearchBar'
-import { AuthorCard } from './components/AuthorCard'
-import { LoginForm } from './components/LoginForm'
-import { Modal } from './components/Modal'
-import { AuthorForm } from './components/AuthorForm'
-import './App.css'
+import { useEffect, useRef, useState } from "react";
+import { useAuth } from "./hooks/useAuth";
+import { LoginForm } from "./components/LoginForm";
+import { Modal } from "./components/Modal";
+import { AuthorsPage, type AuthorsPageHandle } from "./components/AuthorsPage";
+import {
+  LibraryPage,
+  type LibraryPageHandle,
+} from "./components/library/LibraryPage";
+import "./App.css";
+
+type Tab = "authors" | "library";
+
+const TAB_STORAGE_KEY = "activeTab";
+
+function getInitialTab(): Tab {
+  const stored = localStorage.getItem(TAB_STORAGE_KEY);
+  return stored === "library" ? "library" : "authors";
+}
 
 function App() {
-  const { user, loading: authLoading, signIn, signOut } = useAuth()
-  const {
-    authors,
-    loading,
-    error,
-    search,
-    setSearch,
-    sortField,
-    setSortField,
-    filterStatus,
-    setFilterStatus,
-    totalCount,
-    filteredCount,
-    refetch,
-  } = useAuthors()
+  const { user, loading: authLoading, signIn, signOut } = useAuth();
+  const [tab, setTab] = useState<Tab>(getInitialTab);
+  const [visited, setVisited] = useState<Record<Tab, boolean>>(() => ({
+    authors: getInitialTab() === "authors",
+    library: getInitialTab() === "library",
+  }));
+  const [showLogin, setShowLogin] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const authorsRef = useRef<AuthorsPageHandle>(null);
+  const libraryRef = useRef<LibraryPageHandle>(null);
 
-  const { theme, toggle: toggleTheme } = useTheme()
-  const [showLogin, setShowLogin] = useState(false)
-  const [showAddAuthor, setShowAddAuthor] = useState(false)
+  const isLoggedIn = !!user;
 
-  const isLoggedIn = !!user
+  useEffect(() => {
+    localStorage.setItem(TAB_STORAGE_KEY, tab);
+  }, [tab]);
+
+  const switchTab = (next: Tab) => {
+    setTab(next);
+    setVisited((v) => (v[next] ? v : { ...v, [next]: true }));
+  };
+
+  const handleRefresh = async () => {
+    const handle = tab === "authors" ? authorsRef.current : libraryRef.current;
+    if (!handle) return;
+    setRefreshing(true);
+    try {
+      await handle.refresh();
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   return (
     <div className="app">
       <header className="app-header">
         <h1>Book Tracker</h1>
         <p className="subtitle">Upcoming releases from authors you follow</p>
+      </header>
+      <div className="app-toolbar">
         <div className="auth-bar">
-          <button
-            className="btn-small theme-toggle"
-            onClick={toggleTheme}
-            title={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
-          >
-            {theme === 'light' ? 'Dark' : 'Light'}
-          </button>
           {authLoading ? null : isLoggedIn ? (
             <>
-              <button className="btn-small" onClick={() => setShowAddAuthor(true)}>
-                + Author
+              {tab === "authors" && (
+                <button
+                  className="btn-small"
+                  onClick={() => authorsRef.current?.openAddAuthor()}
+                >
+                  + Author
+                </button>
+              )}
+              <button
+                className="btn-small"
+                onClick={handleRefresh}
+                disabled={refreshing}
+                title={
+                  tab === "library"
+                    ? "Fetch latest from Goodreads"
+                    : "Reload authors"
+                }
+              >
+                {refreshing ? "Refreshing..." : "Refresh"}
               </button>
               <button className="btn-small btn-secondary" onClick={signOut}>
                 Sign out
@@ -60,34 +92,42 @@ function App() {
             </button>
           )}
         </div>
-      </header>
+        <nav className="tabs" role="tablist">
+          <button
+            role="tab"
+            aria-selected={tab === "authors"}
+            className={`tab ${tab === "authors" ? "tab-active" : ""}`}
+            onClick={() => switchTab("authors")}
+          >
+            Authors
+          </button>
+          <button
+            role="tab"
+            aria-selected={tab === "library"}
+            className={`tab ${tab === "library" ? "tab-active" : ""}`}
+            onClick={() => switchTab("library")}
+          >
+            My Library
+          </button>
+        </nav>
+      </div>
 
-      <SearchBar
-        search={search}
-        onSearchChange={setSearch}
-        sortField={sortField}
-        onSortChange={setSortField}
-        filterStatus={filterStatus}
-        onFilterChange={setFilterStatus}
-        totalCount={totalCount}
-        filteredCount={filteredCount}
-      />
-
-      <main className="author-grid">
-        {loading && <p className="state-msg">Loading...</p>}
-        {error && <p className="state-msg error">Error: {error}</p>}
-        {!loading && !error && authors.length === 0 && (
-          <p className="state-msg">No authors found.</p>
-        )}
-        {authors.map((author) => (
-          <AuthorCard
-            key={author.id}
-            author={author}
-            isLoggedIn={isLoggedIn}
-            onChanged={refetch}
-          />
-        ))}
-      </main>
+      {visited.authors && (
+        <div
+          className={`tab-pane ${tab === "authors" ? "tab-pane-active" : ""}`}
+          hidden={tab !== "authors"}
+        >
+          <AuthorsPage ref={authorsRef} isLoggedIn={isLoggedIn} />
+        </div>
+      )}
+      {visited.library && (
+        <div
+          className={`tab-pane ${tab === "library" ? "tab-pane-active" : ""}`}
+          hidden={tab !== "library"}
+        >
+          <LibraryPage ref={libraryRef} isLoggedIn={isLoggedIn} />
+        </div>
+      )}
 
       <Modal
         open={showLogin}
@@ -96,28 +136,14 @@ function App() {
       >
         <LoginForm
           onLogin={async (email, password) => {
-            const err = await signIn(email, password)
-            if (!err) setShowLogin(false)
-            return err
+            const err = await signIn(email, password);
+            if (!err) setShowLogin(false);
+            return err;
           }}
-        />
-      </Modal>
-
-      <Modal
-        open={showAddAuthor}
-        onClose={() => setShowAddAuthor(false)}
-        title="Add Author"
-      >
-        <AuthorForm
-          onSaved={() => {
-            setShowAddAuthor(false)
-            refetch()
-          }}
-          onCancel={() => setShowAddAuthor(false)}
         />
       </Modal>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
