@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 
 interface ModalProps {
   open: boolean
@@ -16,12 +17,17 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
       if (e.key === 'Escape') onClose()
     }
     window.addEventListener('keydown', handleKey)
-    return () => window.removeEventListener('keydown', handleKey)
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      window.removeEventListener('keydown', handleKey)
+      document.body.style.overflow = prevOverflow
+    }
   }, [open, onClose])
 
   if (!open) return null
 
-  return (
+  return createPortal(
     <div
       className="modal-backdrop"
       ref={backdropRef}
@@ -38,6 +44,7 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
         </div>
         <div className="modal-body">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
