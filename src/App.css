@@ -2,6 +2,30 @@
    Book Tracker — three themes (terminal / cyber / noir)
    All dark. Accent + type differ per theme.
    ========================================================= */
+@font-face {
+  font-family: "Bookerly";
+  src: url("./assets/Bookerly-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Bookerly";
+  src: url("./assets/Bookerly-Bold.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Bookerly";
+  src: url("./assets/Bookerly-Italic.ttf") format("truetype");
+  font-weight: normal;
+  font-style: italic;
+}
+@font-face {
+  font-family: "Bookerly";
+  src: url("./assets/Bookerly-BoldItalic.ttf") format("truetype");
+  font-weight: bold;
+  font-style: italic;
+}
 
 * {
   box-sizing: border-box;
@@ -27,7 +51,7 @@
   --released: #7a828d;
   --shadow: rgba(0, 0, 0, 0.55);
   --font-display: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
-  --font-body: "Literata", "IBM Plex Serif", Georgia, serif;
+  --font-body: "Bookerly", "IBM Plex Serif", Georgia, serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
   --radius: 4px;
   --toolbar-texture: repeating-linear-gradient(
