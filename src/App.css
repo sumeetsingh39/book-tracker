@@ -66,8 +66,9 @@
   --accent: #b2261d;
   --accent-contrast: #fbf8f2;
   --upcoming: #2e6b3c;
+  --due: #a2610a;
   --overdue: #b2261d;
-  --released: #8a8174;
+  --undated: #8a8174;
   --shadow: rgba(60, 45, 25, 0.16);
   --backdrop: rgba(40, 32, 22, 0.45);
   --font-display: "Besley", "Clarendon", Rockwell, Georgia, serif;
@@ -90,8 +91,9 @@
   --accent: #e2705d;
   --accent-contrast: #171512;
   --upcoming: #8fbf88;
+  --due: #e3a64a;
   --overdue: #e2705d;
-  --released: #857c70;
+  --undated: #857c70;
   --shadow: rgba(0, 0, 0, 0.5);
   --backdrop: rgba(0, 0, 0, 0.6);
   color-scheme: dark;
@@ -598,8 +600,12 @@ a {
   color: var(--overdue);
 }
 
-.status-released {
-  color: var(--released);
+.status-due {
+  color: var(--due);
+}
+
+.status-unknown {
+  color: var(--undated);
 }
 
 .book-date {
@@ -795,6 +801,27 @@ a {
   border-color: var(--border-strong);
 }
 
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr;
+  gap: 0.75rem;
+}
+
+.date-parts {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.date-parts select {
+  flex: 1.4;
+  min-width: 0;
+}
+
+.date-parts input {
+  flex: 1;
+  min-width: 0;
+}
+
 .form-error {
   color: var(--overdue);
 }
@@ -875,6 +902,85 @@ a {
 .collapsible-body {
   margin-top: 0.6rem;
   animation: fade-in 180ms ease-out;
+}
+
+/* =========================================================
+   Releases — timeline
+   ========================================================= */
+
+.release-hint {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin-bottom: 0.4rem;
+}
+
+.release-list {
+  list-style: none;
+}
+
+.release-item {
+  display: grid;
+  grid-template-columns: 7.5rem 1fr auto;
+  align-items: baseline;
+  gap: 0.4rem 1.25rem;
+  padding: 0.6rem 0;
+  border-top: 1px dotted var(--border-strong);
+  min-width: 0;
+}
+
+.release-item:first-child {
+  border-top: none;
+}
+
+.release-date {
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  font-feature-settings: "tnum";
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.release-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.release-title {
+  font-family: var(--font-display);
+  font-size: 1.12rem;
+  font-weight: 700;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.release-author {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.release-side {
+  display: flex;
+  align-items: baseline;
+  gap: 0.9rem;
+  justify-self: end;
+}
+
+@media (max-width: 600px) {
+  .release-item {
+    grid-template-columns: 1fr auto;
+  }
+  .release-date {
+    grid-column: 1 / -1;
+  }
+  .release-side {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+  .form-row {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* =========================================================

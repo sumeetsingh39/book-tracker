@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 import type { Author, SortField, FilterStatus } from '../lib/types'
+import { displayStatus, releaseSortKey } from '../lib/release'
 
 export function useAuthors() {
   const [authors, setAuthors] = useState<Author[]>([])
@@ -25,7 +26,12 @@ export function useAuthors() {
       return
     }
 
-    setAuthors(data as Author[])
+    setAuthors(
+      (data as Author[]).map((a) => ({
+        ...a,
+        books: [...a.books].sort((x, y) => releaseSortKey(x).localeCompare(releaseSortKey(y))),
+      })),
+    )
     setLoading(false)
   }, [])
 
@@ -45,14 +51,11 @@ export function useAuthors() {
     }
 
     // Status filter
-    if (filterStatus === 'upcoming') {
-      return author.books.some((b) => b.status === 'upcoming')
-    }
-    if (filterStatus === 'overdue') {
-      return author.books.some((b) => b.status === 'overdue')
-    }
     if (filterStatus === 'no_books') {
       return author.books.length === 0
+    }
+    if (filterStatus !== 'all') {
+      return author.books.some((b) => displayStatus(b) === filterStatus)
     }
 
     return true
@@ -63,16 +66,15 @@ export function useAuthors() {
       return a.name.localeCompare(b.name)
     }
 
-    // Sort by earliest upcoming date
-    const getEarliestDate = (author: Author): number => {
-      const dates = author.books
-        .filter((book) => book.release_date)
-        .map((book) => new Date(book.release_date!).getTime())
-      if (dates.length === 0) return Infinity
-      return Math.min(...dates)
-    }
-
-    return getEarliestDate(a) - getEarliestDate(b)
+    // Sort by earliest release; authors without books last
+    const earliest = (author: Author): string =>
+      author.books.reduce((min, book) => {
+        const key = releaseSortKey(book)
+        return key < min ? key : min
+      }, '￿')
+    const ka = earliest(a)
+    const kb = earliest(b)
+    return ka < kb ? -1 : ka > kb ? 1 : a.name.localeCompare(b.name)
   })
 
   return {

@@ -4,28 +4,9 @@ import { supabase } from '../lib/supabase'
 import { Modal } from './Modal'
 import { AuthorForm } from './AuthorForm'
 import { BookForm } from './BookForm'
+import { BookActions } from './BookActions'
+import { displayStatus, formatRelease, STATUS_LABEL } from '../lib/release'
 import type { Author, Book } from '../lib/types'
-
-function formatDate(dateStr: string | null): string {
-  if (!dateStr) return 'TBD'
-  const date = new Date(dateStr + 'T00:00:00')
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  })
-}
-
-function statusClass(status: string): string {
-  switch (status) {
-    case 'overdue':
-      return 'status-overdue'
-    case 'released':
-      return 'status-released'
-    default:
-      return 'status-upcoming'
-  }
-}
 
 interface AuthorCardProps {
   author: Author
@@ -41,13 +22,6 @@ export function AuthorCard({ author, isLoggedIn, onChanged }: AuthorCardProps) {
   const deleteAuthor = async () => {
     if (!confirm(`Delete "${author.name}" and all their books?`)) return
     const { error } = await supabase.from('authors').delete().eq('id', author.id)
-    if (error) alert(error.message)
-    else onChanged()
-  }
-
-  const deleteBook = async (book: Book) => {
-    if (!confirm(`Delete "${book.title}"?`)) return
-    const { error } = await supabase.from('books').delete().eq('id', book.id)
     if (error) alert(error.message)
     else onChanged()
   }
@@ -95,27 +69,18 @@ export function AuthorCard({ author, isLoggedIn, onChanged }: AuthorCardProps) {
               <li key={book.id} className="book-item">
                 <span className="book-title">{book.title}</span>
                 <span className="book-meta">
-                  <span className={`book-status ${statusClass(book.status)}`}>
-                    {book.status}
+                  <span className={`book-status status-${displayStatus(book)}`}>
+                    {STATUS_LABEL[displayStatus(book)]}
                   </span>
                   <span className="book-date">
-                    {formatDate(book.release_date)}
+                    {formatRelease(book.release_date, book.date_precision)}
                   </span>
                   {isLoggedIn && (
-                    <span className="book-actions">
-                      <button
-                        className="text-action"
-                        onClick={() => setEditingBook(book)}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="text-action text-action-danger"
-                        onClick={() => deleteBook(book)}
-                      >
-                        Remove
-                      </button>
-                    </span>
+                    <BookActions
+                      book={book}
+                      onEdit={() => setEditingBook(book)}
+                      onChanged={onChanged}
+                    />
                   )}
                 </span>
               </li>

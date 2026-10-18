@@ -43,8 +43,10 @@ export function SearchBar({
             onChange={(e) => onFilterChange(e.target.value as FilterStatus)}
           >
             <option value="all">All</option>
+            <option value="due">Due</option>
             <option value="upcoming">Upcoming</option>
             <option value="overdue">Overdue</option>
+            <option value="unknown">No date</option>
             <option value="no_books">No books listed</option>
           </select>
         </div>

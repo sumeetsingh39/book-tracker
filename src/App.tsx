@@ -6,12 +6,16 @@ import { ThemeToggle } from "./components/ThemeToggle";
 import { Plus } from "@phosphor-icons/react";
 import { AuthorsPage, type AuthorsPageHandle } from "./components/AuthorsPage";
 import {
+  ReleasesPage,
+  type ReleasesPageHandle,
+} from "./components/ReleasesPage";
+import {
   LibraryPage,
   type LibraryPageHandle,
 } from "./components/library/LibraryPage";
 import "./App.css";
 
-type Tab = "authors" | "library";
+type Tab = "releases" | "authors" | "library";
 
 const TAB_STORAGE_KEY = "activeTab";
 
@@ -24,18 +28,20 @@ const today = new Date().toLocaleDateString("en-US", {
 
 function getInitialTab(): Tab {
   const stored = localStorage.getItem(TAB_STORAGE_KEY);
-  return stored === "library" ? "library" : "authors";
+  return stored === "authors" || stored === "library" ? stored : "releases";
 }
 
 function App() {
   const { user, loading: authLoading, signIn, signOut } = useAuth();
   const [tab, setTab] = useState<Tab>(getInitialTab);
   const [visited, setVisited] = useState<Record<Tab, boolean>>(() => ({
+    releases: getInitialTab() === "releases",
     authors: getInitialTab() === "authors",
     library: getInitialTab() === "library",
   }));
   const [showLogin, setShowLogin] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const releasesRef = useRef<ReleasesPageHandle>(null);
   const authorsRef = useRef<AuthorsPageHandle>(null);
   const libraryRef = useRef<LibraryPageHandle>(null);
 
@@ -45,13 +51,23 @@ function App() {
     localStorage.setItem(TAB_STORAGE_KEY, tab);
   }, [tab]);
 
+  const handleFor = (t: Tab) =>
+    t === "releases"
+      ? releasesRef.current
+      : t === "authors"
+        ? authorsRef.current
+        : libraryRef.current;
+
   const switchTab = (next: Tab) => {
     setTab(next);
     setVisited((v) => (v[next] ? v : { ...v, [next]: true }));
+    // Releases and Authors load the same books separately; reload on return
+    // so an edit made on one shows on the other.
+    if (next !== "library" && visited[next]) handleFor(next)?.refresh();
   };
 
   const handleRefresh = async () => {
-    const handle = tab === "authors" ? authorsRef.current : libraryRef.current;
+    const handle = handleFor(tab);
     if (!handle) return;
     setRefreshing(true);
     try {
@@ -73,6 +89,14 @@ function App() {
       </header>
       <div className="app-toolbar">
         <nav className="tabs" role="tablist">
+          <button
+            role="tab"
+            aria-selected={tab === "releases"}
+            className={`tab ${tab === "releases" ? "tab-active" : ""}`}
+            onClick={() => switchTab("releases")}
+          >
+            Releases
+          </button>
           <button
             role="tab"
             aria-selected={tab === "authors"}
@@ -108,7 +132,7 @@ function App() {
                 title={
                   tab === "library"
                     ? "Fetch latest from Goodreads"
-                    : "Reload authors"
+                    : "Reload books"
                 }
               >
                 {refreshing ? "Refreshing..." : "Refresh"}
@@ -125,6 +149,14 @@ function App() {
         </div>
       </div>
 
+      {visited.releases && (
+        <div
+          className={`tab-pane ${tab === "releases" ? "tab-pane-active" : ""}`}
+          hidden={tab !== "releases"}
+        >
+          <ReleasesPage ref={releasesRef} isLoggedIn={isLoggedIn} />
+        </div>
+      )}
       {visited.authors && (
         <div
           className={`tab-pane ${tab === "authors" ? "tab-pane-active" : ""}`}

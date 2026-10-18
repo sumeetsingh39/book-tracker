@@ -12,12 +12,15 @@ export interface Book {
   author_id: number
   title: string
   release_date: string | null
-  status: 'upcoming' | 'overdue' | 'released'
+  date_precision: DatePrecision
+  status: 'upcoming' | 'overdue'
   created_at: string
 }
 
+export type DatePrecision = 'day' | 'month' | 'year'
+
 export type SortField = 'name' | 'date'
-export type FilterStatus = 'all' | 'upcoming' | 'overdue' | 'no_books'
+export type FilterStatus = 'all' | 'due' | 'upcoming' | 'overdue' | 'unknown' | 'no_books'
 
 export type Shelf = 'read' | 'currently-reading'
 
