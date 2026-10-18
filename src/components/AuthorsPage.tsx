@@ -6,6 +6,7 @@ import { Modal } from './Modal'
 import { AuthorForm } from './AuthorForm'
 import { BookForm } from './BookForm'
 import { CollapsibleSection } from './library/CollapsibleSection'
+import { LinkAuthors } from './LinkAuthors'
 
 interface AuthorsPageProps {
   isLoggedIn: boolean
@@ -38,6 +39,8 @@ export const AuthorsPage = forwardRef<AuthorsPageHandle, AuthorsPageProps>(
     const [showAddAuthor, setShowAddAuthor] = useState(false)
     const [showAddBook, setShowAddBook] = useState(false)
     const [openedId, setOpenedId] = useState<number | null>(null)
+    const [linking, setLinking] = useState(false)
+    const unlinked = allAuthors.filter((a) => a.hardcover_status === 'unlinked').length
 
     useImperativeHandle(ref, () => ({
       openAddAuthor: () => setShowAddAuthor(true),
@@ -64,6 +67,18 @@ export const AuthorsPage = forwardRef<AuthorsPageHandle, AuthorsPageProps>(
           totalCount={totalCount}
           filteredCount={filteredCount}
         />
+
+        {isLoggedIn && unlinked > 0 && (
+          <div className="link-banner">
+            <span>
+              <strong>{unlinked}</strong> {unlinked === 1 ? 'author isn’t' : 'authors aren’t'} linked
+              to Hardcover, so they aren’t checked for new books.
+            </span>
+            <button className="btn-small" onClick={() => setLinking(true)}>
+              Link authors
+            </button>
+          </div>
+        )}
 
         {loading && authors.length === 0 && <p className="state-msg">Loading...</p>}
         {error && <p className="state-msg error">Error: {error}</p>}
@@ -112,6 +127,16 @@ export const AuthorsPage = forwardRef<AuthorsPageHandle, AuthorsPageProps>(
             </ul>
           </CollapsibleSection>
         )}
+
+        <Modal open={linking} onClose={() => setLinking(false)} title="Link authors to Hardcover">
+          {linking && (
+            <LinkAuthors
+              authors={allAuthors}
+              onChanged={refetch}
+              onDone={() => setLinking(false)}
+            />
+          )}
+        </Modal>
 
         <Modal
           open={showAddAuthor}

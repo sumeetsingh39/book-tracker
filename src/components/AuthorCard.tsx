@@ -5,6 +5,8 @@ import { Modal } from './Modal'
 import { AuthorForm } from './AuthorForm'
 import { BookForm } from './BookForm'
 import { BookActions } from './BookActions'
+import { LinkAuthors } from './LinkAuthors'
+import { hardcoverAuthorUrl, hardcoverSeriesUrl } from '../lib/hardcover'
 import { displayStatus, formatRelease, STATUS_LABEL } from '../lib/release'
 import type { Author, Book } from '../lib/types'
 
@@ -18,6 +20,7 @@ export function AuthorCard({ author, isLoggedIn, onChanged }: AuthorCardProps) {
   const [editingAuthor, setEditingAuthor] = useState(false)
   const [addingBook, setAddingBook] = useState(false)
   const [editingBook, setEditingBook] = useState<Book | null>(null)
+  const [linking, setLinking] = useState(false)
 
   const deleteAuthor = async () => {
     if (!confirm(`Delete "${author.name}" and all their books?`)) return
@@ -41,6 +44,26 @@ export function AuthorCard({ author, isLoggedIn, onChanged }: AuthorCardProps) {
                 Goodreads
               </a>
             )}
+            {author.hardcover_slug && (
+              <a
+                href={hardcoverAuthorUrl(author.hardcover_slug)}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Hardcover
+              </a>
+            )}
+            {(author.hardcover_series ?? []).map((x) => (
+              <a
+                key={x.id}
+                href={hardcoverSeriesUrl(x.slug)}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={`Following the Hardcover series “${x.name}”`}
+              >
+                {x.name}
+              </a>
+            ))}
             {author.extra_urls &&
               author.extra_urls.split('; ').map((entry, i) => {
                 const colonIdx = entry.indexOf(': ')
@@ -99,12 +122,34 @@ export function AuthorCard({ author, isLoggedIn, onChanged }: AuthorCardProps) {
             <button className="btn-small" onClick={() => setEditingAuthor(true)}>
               Edit
             </button>
+            <button
+              className="btn-small"
+              onClick={() => setLinking(true)}
+              title={
+                author.hardcover_status === 'linked'
+                  ? 'Linked to Hardcover; change which author it is'
+                  : 'Link to Hardcover so new books are found'
+              }
+            >
+              {author.hardcover_status === 'linked' ? 'Relink' : 'Link Hardcover'}
+            </button>
             <button className="btn-small btn-danger" onClick={deleteAuthor}>
               Delete
             </button>
           </div>
         )}
       </div>
+
+      <Modal open={linking} onClose={() => setLinking(false)} title="Link to Hardcover">
+        {linking && (
+          <LinkAuthors
+            authors={[author]}
+            only={author}
+            onChanged={onChanged}
+            onDone={() => setLinking(false)}
+          />
+        )}
+      </Modal>
 
       <Modal
         open={editingAuthor}

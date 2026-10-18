@@ -1,5 +1,8 @@
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from 'react'
 import { useAuthors } from '../hooks/useAuthors'
+import { useSuggestions } from '../hooks/useSuggestions'
+import { supabase } from '../lib/supabase'
+import { SuggestionsSection } from './SuggestionsSection'
 import { CollapsibleSection } from './library/CollapsibleSection'
 import { BookActions } from './BookActions'
 import { BookForm } from './BookForm'
@@ -9,11 +12,13 @@ import {
   bucketOf,
   displayStatus,
   formatRelease,
+  releaseEnd,
   releaseSortKey,
+  today,
   STATUS_LABEL,
   type Bucket,
 } from '../lib/release'
-import type { Book } from '../lib/types'
+import type { Book, DatePrecision, Suggestion } from '../lib/types'
 
 interface ReleasesPageProps {
   isLoggedIn: boolean
@@ -40,6 +45,20 @@ const HINTS: Partial<Record<Bucket, string>> = {
   overdue: 'Released, but not available to you yet.',
 }
 
+const PRECISION_RANK: Record<DatePrecision, number> = { year: 1, month: 2, day: 3 }
+
+// Worth mentioning when Hardcover's date moves the book, or pins it down more
+// precisely than you have it; not when it is merely vaguer.
+function hardcoverDiffers(book: Book, s: Suggestion | undefined): s is Suggestion {
+  if (!s?.release_date) return false
+  if (!book.release_date) return true
+  if (s.release_date === book.release_date && s.date_precision === book.date_precision) return false
+  const within =
+    s.release_date <= book.release_date &&
+    book.release_date <= releaseEnd(s.release_date, s.date_precision)
+  return !within || PRECISION_RANK[s.date_precision] > PRECISION_RANK[book.date_precision]
+}
+
 // Sections that start collapsed until opened once.
 const COLLAPSED_BY_DEFAULT: Bucket[] = ['later', 'unknown']
 
@@ -49,6 +68,17 @@ export const ReleasesPage = forwardRef<ReleasesPageHandle, ReleasesPageProps>(
     const [editing, setEditing] = useState<Book | null>(null)
     const [adding, setAdding] = useState(false)
     const [query, setQuery] = useState('')
+    const suggestions = useSuggestions(isLoggedIn, refetch)
+
+    const applyHardcoverDate = async (book: Book, s: Suggestion) => {
+      const update: Partial<Book> = { release_date: s.release_date, date_precision: s.date_precision }
+      if (book.status === 'overdue' && releaseEnd(s.release_date!, s.date_precision) >= today()) {
+        update.status = 'upcoming'
+      }
+      const { error: err } = await supabase.from('books').update(update).eq('id', book.id)
+      if (err) return alert(err.message)
+      refetch()
+    }
 
     useImperativeHandle(ref, () => ({
       refresh: refetch,
@@ -109,6 +139,19 @@ export const ReleasesPage = forwardRef<ReleasesPageHandle, ReleasesPageProps>(
           </div>
         </div>
 
+        {isLoggedIn && (
+          <SuggestionsSection
+            inbox={suggestions.inbox}
+            lastCheckedAt={suggestions.lastScan?.checkedAt ?? null}
+            scanning={suggestions.scanning}
+            error={suggestions.error}
+            onCheck={suggestions.scan}
+            setStatus={suggestions.setStatus}
+            reload={suggestions.reload}
+            onBooksChanged={refetch}
+          />
+        )}
+
         {groups.length === 0 && (
           <p className="state-msg">
             {query ? 'Nothing matches that search.' : 'No books tracked yet. Use + Book to add one.'}
@@ -128,6 +171,9 @@ export const ReleasesPage = forwardRef<ReleasesPageHandle, ReleasesPageProps>(
             <ul className="release-list">
               {group.entries.map(({ book, authorName }) => {
                 const status = displayStatus(book)
+                const hc = book.hardcover_book_id
+                  ? suggestions.byHardcoverBook.get(book.hardcover_book_id)
+                  : undefined
                 return (
                   <li key={book.id} className="release-item">
                     <span className="release-date">
@@ -136,6 +182,15 @@ export const ReleasesPage = forwardRef<ReleasesPageHandle, ReleasesPageProps>(
                     <div className="release-main">
                       <span className="release-title">{book.title}</span>
                       <span className="release-author">{authorName}</span>
+                      {isLoggedIn && hardcoverDiffers(book, hc) && (
+                        <span className="hc-hint">
+                          Hardcover says {formatRelease(hc.release_date, hc.date_precision)}
+                          {' · '}
+                          <button className="hc-hint-use" onClick={() => applyHardcoverDate(book, hc)}>
+                            Use it
+                          </button>
+                        </span>
+                      )}
                     </div>
                     <div className="release-side">
                       <span className={`book-status status-${status}`}>
