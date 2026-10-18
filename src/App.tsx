@@ -79,6 +79,7 @@ function App() {
       if (e.key !== "/" || e.ctrlKey || e.metaKey || e.altKey) return;
       const el = e.target as HTMLElement;
       if (el.closest("input, textarea, select, [contenteditable]")) return;
+      if (document.querySelector(".modal-backdrop")) return;
       const handle = tab === "releases" ? releasesRef.current : tab === "authors" ? authorsRef.current : null;
       if (!handle) return;
       e.preventDefault();

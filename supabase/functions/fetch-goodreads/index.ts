@@ -34,12 +34,25 @@ function stripHtml(value: string | undefined): string | null {
   return text || null
 }
 
-async function fetchShelf(grUserId: string, rssKey: string, shelf: Shelf) {
-  const url = `https://www.goodreads.com/review/list_rss/${grUserId}?key=${encodeURIComponent(rssKey)}&shelf=${shelf}`
-  const res = await fetch(url, { headers: { 'User-Agent': 'book-tracker/1.0' } })
-  if (!res.ok) throw new Error(`Goodreads ${shelf} fetch failed: ${res.status}`)
-  const xml = await res.text()
+// The RSS feed is paged; read pages until one comes back empty.
+const MAX_PAGES = 20
 
+async function fetchShelf(grUserId: string, rssKey: string, shelf: Shelf) {
+  const all: ReturnType<typeof parseItems> = []
+  const seen = new Set<string>()
+  for (let page = 1; page <= MAX_PAGES; page++) {
+    const url = `https://www.goodreads.com/review/list_rss/${grUserId}?key=${encodeURIComponent(rssKey)}&shelf=${shelf}&page=${page}`
+    const res = await fetch(url, { headers: { 'User-Agent': 'book-tracker/1.0' } })
+    if (!res.ok) throw new Error(`Goodreads ${shelf} fetch failed: ${res.status}`)
+    const items = parseItems(await res.text(), shelf).filter((it) => !seen.has(it.goodreads_book_id))
+    if (items.length === 0) break
+    for (const it of items) seen.add(it.goodreads_book_id)
+    all.push(...items)
+  }
+  return all
+}
+
+function parseItems(xml: string, shelf: Shelf) {
   const parser = new XMLParser({
     ignoreAttributes: true,
     parseTagValue: true,
@@ -117,12 +130,24 @@ Deno.serve(async (req) => {
       for (const r of rows) allRows.push({ ...r, user_id: user.id })
     }
 
-    // Wipe and replace this user's cache so removed books disappear.
-    await admin.from('gr_items').delete().eq('user_id', user.id)
+    // Write the new copy first, then drop rows this sync didn't see (books
+    // removed on Goodreads). A failed write leaves the old copy in place.
+    const syncedAt = new Date().toISOString()
     if (allRows.length > 0) {
-      const { error: insErr } = await admin.from('gr_items').insert(allRows)
-      if (insErr) throw insErr
+      const { error: upErr } = await admin
+        .from('gr_items')
+        .upsert(
+          allRows.map((r) => ({ ...r, fetched_at: syncedAt })),
+          { onConflict: 'user_id,goodreads_book_id,shelf' },
+        )
+      if (upErr) throw upErr
     }
+    const { error: delErr } = await admin
+      .from('gr_items')
+      .delete()
+      .eq('user_id', user.id)
+      .lt('fetched_at', syncedAt)
+    if (delErr) throw delErr
 
     return new Response(JSON.stringify({ ok: true, counts }), {
       headers: { ...cors, 'content-type': 'application/json' },

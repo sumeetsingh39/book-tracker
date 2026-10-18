@@ -73,6 +73,10 @@ function Overview({
   const [message, setMessage] = useState('')
   const [progress, setProgress] = useState<{ done: number; linked: number } | null>(null)
   const stop = useRef(false)
+  // Closing the dialog stops a bulk run instead of leaving it linking unseen.
+  useEffect(() => () => {
+    stop.current = true
+  }, [])
 
   const byGoodreads = async () => {
     setBusy('goodreads')

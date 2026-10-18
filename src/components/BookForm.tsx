@@ -63,6 +63,16 @@ export function BookForm({ authorId, authors = [], book, onSaved, onCancel }: Bo
     e.preventDefault()
     setError('')
 
+    // A month without a year (or a half-typed year) would otherwise save as "no date".
+    if (precision !== 'day' && !releaseDate && (yearText || monthText)) {
+      setError(
+        precision === 'month'
+          ? 'Pick both the month and a four-digit year, or clear them.'
+          : 'Enter a four-digit year, or clear it.',
+      )
+      return
+    }
+
     let targetAuthor = authorId
     if (targetAuthor === undefined) {
       if (!author) {
@@ -82,6 +92,8 @@ export function BookForm({ authorId, authors = [], book, onSaved, onCancel }: Bo
           return
         }
         targetAuthor = data.id as number
+        // If saving the book fails below, a retry reuses this author.
+        setAuthor({ id: targetAuthor, name: author.name })
       } else {
         targetAuthor = author.id
       }

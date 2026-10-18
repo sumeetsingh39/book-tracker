@@ -84,21 +84,24 @@ async function hardcover<T>(
 const fold = (s: string) =>
   s.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase()
 
-// "The Wolves of War: Book Two" and "Wolves of War" are the same book here.
+// "The Wolves of War: Book Two", "Wolves of War (Book 2)" and "Wolves of War"
+// are the same book here; "Red God" and "Red Goddess" are not, nor are
+// "Hunger" and "Hunger Games". Subtitles and edition filler are dropped, then
+// the remaining words must match exactly.
+const FILLER = /\s+(a novel|novel|book \w+|vol(ume)? \w+|#\s*\d+)$/
+
 function titleKey(title: string): string {
-  return fold(title)
-    .split(/[:(\[]/)[0]
-    .replace(/^(the|a|an)\s+/, '')
-    .replace(/[^a-z0-9]/g, '')
+  let t = fold(title).split(/[:(\[]/)[0].replace(/[^a-z0-9#]+/g, ' ').trim()
+  for (let prev = ''; prev !== t; ) {
+    prev = t
+    t = t.replace(FILLER, '').trim()
+  }
+  return t.replace(/^(the|a|an)\s+/, '').replace(/\s+/g, ' ')
 }
 
 function sameTitle(a: string, b: string): boolean {
   const ka = titleKey(a)
-  const kb = titleKey(b)
-  if (!ka || !kb) return false
-  if (ka === kb) return true
-  const [short, long] = ka.length < kb.length ? [ka, kb] : [kb, ka]
-  return short.length >= 6 && long.startsWith(short)
+  return ka !== '' && ka === titleKey(b)
 }
 
 type Precision = 'day' | 'month' | 'year'

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { formatRelease } from '../lib/release'
 import { hardcoverBookUrl } from '../lib/hardcover'
@@ -36,6 +37,8 @@ export function SuggestionsSection({
   onBooksChanged,
 }: SuggestionsSectionProps) {
   const toast = useToast()
+  // Suggestions with a Track/Dismiss in flight: a second click must not add the book twice.
+  const [busy, setBusy] = useState<Set<number>>(new Set())
   const dated = inbox.filter((s) => s.release_date)
   const undated = inbox.filter((s) => !s.release_date)
 
@@ -73,17 +76,33 @@ export function SuggestionsSection({
         </span>
       </div>
       <div className="release-side">
-        <button className="btn-small" onClick={() => accept(s)}>
+        <button className="btn-small" disabled={busy.has(s.id)} onClick={() => accept(s)}>
           Track
         </button>
-        <button className="btn-small btn-secondary" onClick={() => dismiss(s)}>
+        <button className="btn-small btn-secondary" disabled={busy.has(s.id)} onClick={() => dismiss(s)}>
           Dismiss
         </button>
       </div>
     </li>
   )
 
-  const accept = async (s: Suggestion) => {
+  const guarded = (fn: (s: Suggestion) => Promise<unknown>) => async (s: Suggestion) => {
+    if (busy.has(s.id)) return
+    setBusy((b) => new Set(b).add(s.id))
+    try {
+      await fn(s)
+    } catch (e) {
+      alert(e instanceof Error ? e.message : String(e))
+    } finally {
+      setBusy((b) => {
+        const n = new Set(b)
+        n.delete(s.id)
+        return n
+      })
+    }
+  }
+
+  const accept = guarded(async (s: Suggestion) => {
     const { data, error: err } = await supabase
       .from('books')
       .insert({
@@ -96,7 +115,7 @@ export function SuggestionsSection({
       })
       .select('id')
       .single()
-    if (err) return alert(err.message)
+    if (err) throw new Error(err.message)
     await setStatus(s.id, 'accepted')
     onBooksChanged()
     toast(`Tracking “${s.title}”`, async () => {
@@ -104,12 +123,12 @@ export function SuggestionsSection({
       await setStatus(s.id, 'new')
       onBooksChanged()
     })
-  }
+  })
 
-  const dismiss = async (s: Suggestion) => {
+  const dismiss = guarded(async (s: Suggestion) => {
     await setStatus(s.id, 'dismissed')
     toast(`Dismissed “${s.title}”`, () => setStatus(s.id, 'new'))
-  }
+  })
 
   const status = scanning
     ? 'Checking Hardcover…'

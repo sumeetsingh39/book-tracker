@@ -3,6 +3,9 @@ import { supabase } from '../lib/supabase'
 import type { Author, SortField, FilterStatus } from '../lib/types'
 import { displayStatus, releaseSortKey } from '../lib/release'
 
+const fold = (s: string) =>
+  s.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase()
+
 export function useAuthors() {
   const [authors, setAuthors] = useState<Author[]>([])
   const [loading, setLoading] = useState(true)
@@ -42,11 +45,9 @@ export function useAuthors() {
   const filtered = authors.filter((author) => {
     // Search filter
     if (search) {
-      const q = search.toLowerCase()
-      const nameMatch = author.name.toLowerCase().includes(q)
-      const bookMatch = author.books.some((b) =>
-        b.title.toLowerCase().includes(q)
-      )
+      const q = fold(search.trim())
+      const nameMatch = fold(author.name).includes(q)
+      const bookMatch = author.books.some((b) => fold(b.title).includes(q))
       if (!nameMatch && !bookMatch) return false
     }
 
