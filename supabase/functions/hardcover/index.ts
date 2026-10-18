@@ -426,7 +426,9 @@ async function scan(db: SupabaseClient) {
     const released = release.date !== null && releaseEnd(release.date, release.precision) < today
     if (!tracked && released && (known.get(key) ?? 'new') === 'new') return
     seen.add(key)
-    const status = known.get(key) ?? (tracked ? 'accepted' : 'new')
+    // A pending suggestion you've since added by hand becomes a link, not a duplicate.
+    const prior = known.get(key)
+    const status = tracked && prior !== 'dismissed' ? 'accepted' : (prior ?? 'new')
     if (!known.has(key) && status === 'new') fresh++
     known.set(key, status)
     rows.push({
