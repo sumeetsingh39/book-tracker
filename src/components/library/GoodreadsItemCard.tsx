@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Star } from '@phosphor-icons/react'
 import type { GrItem } from '../../lib/types'
 
@@ -23,8 +24,13 @@ function formatDate(value: string | null): string | null {
   return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
 }
 
+// Reviews longer than this are clamped to four lines with a More toggle.
+const LONG_REVIEW = 260
+
 export function GoodreadsItemCard({ item }: { item: GrItem }) {
   const read = formatDate(item.date_read)
+  const [expanded, setExpanded] = useState(false)
+  const long = (item.review?.length ?? 0) > LONG_REVIEW
   return (
     <div className="gr-card">
       {item.image_url ? (
@@ -47,7 +53,16 @@ export function GoodreadsItemCard({ item }: { item: GrItem }) {
           <Stars rating={item.rating} />
           {read && <span className="gr-date">Read {read}</span>}
         </div>
-        {item.review && <p className="gr-review">{item.review}</p>}
+        {item.review && (
+          <>
+            <p className={`gr-review ${expanded ? 'gr-review-open' : ''}`}>{item.review}</p>
+            {long && (
+              <button className="gr-review-toggle" onClick={() => setExpanded((e) => !e)}>
+                {expanded ? 'Less' : 'More'}
+              </button>
+            )}
+          </>
+        )}
       </div>
     </div>
   )

@@ -25,8 +25,10 @@ export function SearchBar({
     <div className="search-bar">
       <div className="search-row">
         <input
-          type="text"
-          placeholder="Search authors or books..."
+          id="author-search"
+          type="search"
+          placeholder="Search authors or books…"
+          title="Shortcut: /"
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
           className="search-input"

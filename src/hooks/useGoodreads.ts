@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { supabase } from '../lib/supabase'
 import type { GrItem } from '../lib/types'
 
@@ -7,6 +7,7 @@ export function useGoodreads(enabled: boolean) {
   const [loading, setLoading] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [loaded, setLoaded] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -18,6 +19,7 @@ export function useGoodreads(enabled: boolean) {
     if (err) setError(err.message)
     else setItems((data ?? []) as GrItem[])
     setLoading(false)
+    setLoaded(true)
   }, [])
 
   useEffect(() => {
@@ -40,5 +42,15 @@ export function useGoodreads(enabled: boolean) {
     await load()
   }, [load])
 
-  return { items, loading, refreshing, error, refresh }
+  // When the shelves were last copied from Goodreads (all rows share a sync).
+  const lastSynced = useMemo(
+    () =>
+      items.reduce<string | null>(
+        (max, it) => (max === null || it.fetched_at > max ? it.fetched_at : max),
+        null,
+      ),
+    [items],
+  )
+
+  return { items, loading, loaded, refreshing, error, refresh, lastSynced }
 }

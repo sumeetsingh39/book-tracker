@@ -37,9 +37,8 @@ export function AuthorCard({ author, isLoggedIn, onChanged }: AuthorCardProps) {
                 href={author.goodreads_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                title="Goodreads"
               >
-                GR
+                Goodreads
               </a>
             )}
             {author.extra_urls &&
@@ -67,22 +66,24 @@ export function AuthorCard({ author, isLoggedIn, onChanged }: AuthorCardProps) {
           <ul className="book-list">
             {author.books.map((book) => (
               <li key={book.id} className="book-item">
-                <span className="book-title">{book.title}</span>
-                <span className="book-meta">
-                  <span className={`book-status status-${displayStatus(book)}`}>
-                    {STATUS_LABEL[displayStatus(book)]}
+                <div className="book-main">
+                  <span className="book-title">{book.title}</span>
+                  <span className="book-meta">
+                    <span className={`book-status status-${displayStatus(book)}`}>
+                      {STATUS_LABEL[displayStatus(book)]}
+                    </span>
+                    <span className="book-date">
+                      {formatRelease(book.release_date, book.date_precision)}
+                    </span>
                   </span>
-                  <span className="book-date">
-                    {formatRelease(book.release_date, book.date_precision)}
-                  </span>
-                  {isLoggedIn && (
-                    <BookActions
-                      book={book}
-                      onEdit={() => setEditingBook(book)}
-                      onChanged={onChanged}
-                    />
-                  )}
-                </span>
+                </div>
+                {isLoggedIn && (
+                  <BookActions
+                    book={book}
+                    onEdit={() => setEditingBook(book)}
+                    onChanged={onChanged}
+                  />
+                )}
               </li>
             ))}
           </ul>

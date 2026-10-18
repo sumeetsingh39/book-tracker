@@ -1,11 +1,13 @@
 import { useMemo } from 'react'
 import { TBR_CATEGORIES, type TbrCategory, type TbrItem } from '../../lib/types'
 import { CollapsibleSection } from './CollapsibleSection'
+import { ActionMenu } from '../ActionMenu'
 
 interface TbrListProps {
   items: TbrItem[]
   isLoggedIn: boolean
-  onRemove: (id: number) => void
+  onEdit: (item: TbrItem) => void
+  onRemove: (item: TbrItem) => void
 }
 
 const CATEGORY_ORDER: (TbrCategory | 'uncategorized')[] = [
@@ -25,11 +27,13 @@ const LABELS: Record<TbrCategory | 'uncategorized', string> = {
 function TbrRow({
   item,
   isLoggedIn,
+  onEdit,
   onRemove,
 }: {
   item: TbrItem
   isLoggedIn: boolean
-  onRemove: (id: number) => void
+  onEdit: (item: TbrItem) => void
+  onRemove: (item: TbrItem) => void
 }) {
   return (
     <li className="tbr-item">
@@ -38,24 +42,23 @@ function TbrRow({
       </span>
       <div className="tbr-main">
         <span className="tbr-title">{item.title}</span>
-        {item.author && <span className="tbr-author"> — {item.author}</span>}
+        {item.author && <span className="tbr-author">{item.author}</span>}
         {item.notes && <div className="tbr-notes">{item.notes}</div>}
       </div>
       {isLoggedIn && (
-        <button
-          className="text-action text-action-danger"
-          onClick={() => {
-            if (confirm(`Remove "${item.title}" from TBR?`)) onRemove(item.id)
-          }}
-        >
-          Remove
-        </button>
+        <ActionMenu
+          label={`Actions for ${item.title}`}
+          actions={[
+            { label: 'Edit', onSelect: () => onEdit(item) },
+            { label: 'Remove', onSelect: () => onRemove(item), danger: true },
+          ]}
+        />
       )}
     </li>
   )
 }
 
-export function TbrList({ items, isLoggedIn, onRemove }: TbrListProps) {
+export function TbrList({ items, isLoggedIn, onEdit, onRemove }: TbrListProps) {
   const grouped = useMemo(() => {
     const map = new Map<TbrCategory | 'uncategorized', TbrItem[]>()
     for (const it of items) {
@@ -91,6 +94,7 @@ export function TbrList({ items, isLoggedIn, onRemove }: TbrListProps) {
                 key={item.id}
                 item={item}
                 isLoggedIn={isLoggedIn}
+                onEdit={onEdit}
                 onRemove={onRemove}
               />
             ))}

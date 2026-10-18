@@ -8,6 +8,8 @@ interface CollapsibleSectionProps {
   count?: number
   level?: 'section' | 'group'
   defaultCollapsed?: boolean
+  // Show the body regardless of the stored state (e.g. while searching).
+  forceOpen?: boolean
   children: ReactNode
 }
 
@@ -17,9 +19,12 @@ export function CollapsibleSection({
   count,
   level = 'section',
   defaultCollapsed = false,
+  forceOpen = false,
   children,
 }: CollapsibleSectionProps) {
-  const { collapsed, toggle } = useCollapsed(storageKey, defaultCollapsed)
+  const stored = useCollapsed(storageKey, defaultCollapsed)
+  const collapsed = stored.collapsed && !forceOpen
+  const toggle = stored.toggle
   const Header = level === 'section' ? 'h2' : 'h3'
   return (
     <section className={`collapsible collapsible-${level}`}>

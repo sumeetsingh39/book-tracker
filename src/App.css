@@ -178,7 +178,6 @@ a {
 .collapsible-group > .collapsible-header .collapsible-title,
 .form-actions button,
 .login-form button,
-.tbr-form button,
 .tbr-priority,
 .crud-form label {
   font-family: var(--font-sans);
@@ -315,6 +314,21 @@ a {
   border-bottom-color: var(--accent);
 }
 
+.tab-badge {
+  display: inline-block;
+  min-width: 1.5em;
+  margin-left: 0.45em;
+  padding: 0.1em 0.4em;
+  border-radius: 999px;
+  background: var(--due);
+  color: var(--bg);
+  font-size: 0.85em;
+  letter-spacing: 0;
+  line-height: 1.3;
+  text-align: center;
+  vertical-align: 0.1em;
+}
+
 .auth-bar {
   display: flex;
   align-items: center;
@@ -378,33 +392,6 @@ a {
 
 .btn-small svg {
   font-size: 1.05em;
-}
-
-/* Word actions next to entries: Edit, Remove */
-.text-action {
-  font-family: var(--font-sans);
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  padding: 0;
-  background: none;
-  border: none;
-  border-bottom: 1px solid transparent;
-  color: var(--text-muted);
-  cursor: pointer;
-  transition:
-    color 0.15s,
-    border-color 0.15s;
-}
-
-.text-action:hover {
-  color: var(--text);
-  border-bottom-color: currentColor;
-}
-
-.text-action-danger:hover {
-  color: var(--overdue);
 }
 
 .btn-small.btn-danger:hover {
@@ -563,10 +550,18 @@ a {
 .book-item {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: flex-start;
   gap: 0.75rem;
-  padding: 0.45rem 0;
+  padding: 0.5rem 0;
   border-top: 1px dotted var(--border-strong);
+}
+
+.book-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+  flex: 1;
 }
 
 .book-item:first-child {
@@ -582,7 +577,6 @@ a {
   display: flex;
   gap: 0.6rem;
   align-items: baseline;
-  flex-shrink: 0;
 }
 
 .book-status {
@@ -635,11 +629,6 @@ a {
   margin-top: 0.75rem;
 }
 
-.book-actions {
-  display: flex;
-  gap: 0.75rem;
-  margin-left: 0.25rem;
-}
 
 /* =========================================================
    Modal
@@ -724,9 +713,7 @@ a {
 
 .crud-form input,
 .crud-form select,
-.login-form input,
-.tbr-form input,
-.tbr-form select {
+.login-form input {
   padding: 0.5rem 0.6rem;
   background: var(--bg);
   border: 1px solid var(--border-strong);
@@ -741,15 +728,12 @@ a {
 
 .crud-form input:focus,
 .crud-form select:focus,
-.login-form input:focus,
-.tbr-form input:focus,
-.tbr-form select:focus {
+.login-form input:focus {
   border-color: var(--accent);
 }
 
 .crud-form input::placeholder,
-.login-form input::placeholder,
-.tbr-form input::placeholder {
+.login-form input::placeholder {
   color: var(--text-muted);
   font-style: italic;
 }
@@ -762,8 +746,7 @@ a {
 }
 
 .form-actions button,
-.login-form button,
-.tbr-form button {
+.login-form button {
   font-size: 0.77rem;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -780,16 +763,14 @@ a {
 }
 
 .form-actions button:hover,
-.login-form button:hover,
-.tbr-form button:hover {
+.login-form button:hover {
   background: var(--accent);
   border-color: var(--accent);
   color: var(--accent-contrast);
 }
 
 .form-actions button:disabled,
-.login-form button:disabled,
-.tbr-form button:disabled {
+.login-form button:disabled {
   opacity: 0.45;
   cursor: not-allowed;
 }
@@ -805,6 +786,34 @@ a {
   display: grid;
   grid-template-columns: 1fr 1.3fr;
   gap: 0.75rem;
+}
+
+.form-row-even {
+  grid-template-columns: 1fr 1fr;
+}
+
+.crud-form textarea {
+  padding: 0.5rem 0.6rem;
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  letter-spacing: normal;
+  text-transform: none;
+  line-height: 1.45;
+  resize: vertical;
+  outline: none;
+}
+
+.crud-form textarea:focus {
+  border-color: var(--accent);
+}
+
+.crud-form textarea::placeholder {
+  color: var(--text-muted);
+  font-style: italic;
 }
 
 .date-parts {
@@ -902,6 +911,101 @@ a {
 .collapsible-body {
   margin-top: 0.6rem;
   animation: fade-in 180ms ease-out;
+}
+
+/* =========================================================
+   Authors — index of authors with nothing announced
+   ========================================================= */
+
+.author-index {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15rem 0;
+  line-height: 1.9;
+}
+
+.author-index li:not(:last-child)::after {
+  content: "·";
+  color: var(--border-strong);
+  margin: 0 0.55rem;
+}
+
+.author-index-name {
+  font: inherit;
+  background: none;
+  border: none;
+  border-bottom: 1px solid transparent;
+  padding: 0;
+  color: var(--text);
+  cursor: pointer;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
+}
+
+.author-index-name:hover,
+.author-index-active {
+  color: var(--accent);
+  border-bottom-color: currentColor;
+}
+
+.author-opened {
+  margin: 0.25rem 0 1rem;
+  padding: 0 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.author-opened .author-card {
+  border-top: none;
+  padding-bottom: 1rem;
+}
+
+/* Author picker (quick add) */
+.author-picker {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.author-options {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  right: 0;
+  z-index: 5;
+  list-style: none;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 24px var(--shadow);
+  max-height: 16rem;
+  overflow-y: auto;
+}
+
+.author-option {
+  padding: 0.45rem 0.65rem;
+  color: var(--text);
+  font-size: 1rem;
+  letter-spacing: normal;
+  text-transform: none;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.author-option-active {
+  background: var(--surface-hover);
+}
+
+.author-option-new {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-right: 0.35rem;
 }
 
 /* =========================================================
@@ -1087,6 +1191,46 @@ a.gr-title:hover {
   color: var(--text-muted);
 }
 
+.gr-review.gr-review-open {
+  display: block;
+  -webkit-line-clamp: unset;
+  line-clamp: unset;
+}
+
+.gr-review-toggle {
+  align-self: flex-start;
+  font-family: var(--font-sans);
+  font-size: 0.77rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: none;
+  border: none;
+  padding: 0.15rem 0;
+  color: var(--accent);
+  cursor: pointer;
+}
+
+.sync-line {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: -0.75rem 0 1rem;
+  min-height: 1.3em;
+}
+
+.read-year + .read-year {
+  margin-top: 1rem;
+}
+
+.read-year-heading {
+  font-size: 0.79rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0.4rem 0 0.1rem;
+}
+
 .gr-review {
   font-family: var(--font-body);
   font-size: 0.98rem;
@@ -1103,26 +1247,8 @@ a.gr-title:hover {
    Library — To Be Read
    ========================================================= */
 
-.tbr-form {
-  display: grid;
-  grid-template-columns: 2fr 1.5fr 1.3fr 1.3fr 2fr auto;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
 
-@media (max-width: 720px) {
-  .tbr-form {
-    grid-template-columns: 1fr 1fr;
-  }
-  .tbr-form button {
-    grid-column: 1 / -1;
-  }
-}
 
-.tbr-form input,
-.tbr-form select {
-  font-size: 1.012rem;
-}
 
 .tbr-controls {
   display: flex;
@@ -1221,7 +1347,9 @@ a.gr-title:hover {
 }
 
 .tbr-author {
+  display: block;
   color: var(--text-muted);
+  font-size: 0.95rem;
 }
 
 .tbr-notes {
@@ -1232,16 +1360,145 @@ a.gr-title:hover {
 }
 
 /* =========================================================
+   Toast (Undo)
+   ========================================================= */
+
+.toast-region {
+  position: fixed;
+  left: 50%;
+  bottom: 1.25rem;
+  transform: translateX(-50%);
+  z-index: 200;
+  width: max-content;
+  max-width: calc(100vw - 2rem);
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  padding: 0.7rem 0.9rem 0.7rem 1.1rem;
+  background: var(--text);
+  color: var(--bg);
+  border-radius: var(--radius);
+  box-shadow: 0 10px 30px var(--shadow);
+  animation: fade-in 160ms ease-out;
+}
+
+.toast-undo {
+  font-family: var(--font-sans);
+  font-size: 0.77rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: none;
+  border: 1px solid currentColor;
+  border-radius: var(--radius);
+  color: inherit;
+  padding: 0.3rem 0.6rem;
+  cursor: pointer;
+}
+
+.toast-undo:hover {
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* Row actions menu (⋯) */
+.book-menu {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.book-menu-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 1.75rem;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  font-size: 1.15rem;
+  cursor: pointer;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
+}
+
+.book-menu-button:hover,
+.book-menu-button[aria-expanded="true"] {
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+
+.book-menu-list {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  min-width: 10rem;
+  padding: 0.3rem 0;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  box-shadow: 0 10px 28px var(--shadow);
+  animation: fade-in 120ms ease-out;
+}
+
+.book-menu-list button {
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  text-align: left;
+  padding: 0.5rem 0.9rem;
+  background: none;
+  border: none;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.book-menu-list button:hover,
+.book-menu-list button:focus-visible {
+  background: var(--surface-hover);
+  outline: none;
+}
+
+.book-menu-list .book-menu-danger {
+  color: var(--overdue);
+}
+
+/* =========================================================
    Small screens and long words
    ========================================================= */
 
 @media (max-width: 600px) {
   .app {
-    padding: 1rem 1rem 3rem;
+    padding: 0.75rem 1rem 3rem;
+  }
+
+  /* Compact masthead: the first screen is for the books */
+  .masthead {
+    padding-bottom: 0.6rem;
   }
 
   .masthead-bar {
-    justify-content: center;
+    margin-bottom: 0.6rem;
+    padding-bottom: 0.45rem;
+  }
+
+  .masthead-title {
+    font-size: 2.1rem;
+  }
+
+  .subtitle {
+    display: none;
+  }
+
+  .tabs {
+    gap: 1.1rem;
   }
 
   .app-toolbar {
@@ -1249,12 +1506,6 @@ a.gr-title:hover {
   }
 }
 
-.tbr-form input,
-.tbr-form select,
-.tbr-form button {
-  min-width: 0;
-  max-width: 100%;
-}
 
 .tbr-item,
 .book-item,

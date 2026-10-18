@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { supabase } from '../lib/supabase'
 import type { Book, DatePrecision } from '../lib/types'
 import { releaseEnd, today } from '../lib/release'
+import { AuthorPicker, type AuthorChoice } from './AuthorPicker'
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -17,13 +18,16 @@ function toPrecision(date: string, precision: DatePrecision): string {
 }
 
 interface BookFormProps {
-  authorId: number
+  // Without an author (quick add), the form asks for one and can create it.
+  authorId?: number
+  authors?: { id: number; name: string }[]
   book?: Book | null
   onSaved: () => void
   onCancel: () => void
 }
 
-export function BookForm({ authorId, book, onSaved, onCancel }: BookFormProps) {
+export function BookForm({ authorId, authors = [], book, onSaved, onCancel }: BookFormProps) {
+  const [author, setAuthor] = useState<AuthorChoice | null>(null)
   const [title, setTitle] = useState(book?.title ?? '')
   const [releaseDate, setReleaseDate] = useState(book?.release_date ?? '')
   const [precision, setPrecision] = useState<DatePrecision>(book?.date_precision ?? 'day')
@@ -49,6 +53,7 @@ export function BookForm({ authorId, book, onSaved, onCancel }: BookFormProps) {
     if (p === 'year') changeDate(validYear ? `${year}-01-01` : '', p)
     else changeDate(validYear && month ? `${year}-${month}-01` : '', p)
   }
+
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
@@ -57,10 +62,34 @@ export function BookForm({ authorId, book, onSaved, onCancel }: BookFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+
+    let targetAuthor = authorId
+    if (targetAuthor === undefined) {
+      if (!author) {
+        setError('Pick an author from the list, or choose “New author”.')
+        return
+      }
+      setSubmitting(true)
+      if (author.id === null) {
+        const { data, error: authorErr } = await supabase
+          .from('authors')
+          .insert({ name: author.name })
+          .select('id')
+          .single()
+        if (authorErr) {
+          setSubmitting(false)
+          setError(authorErr.message)
+          return
+        }
+        targetAuthor = data.id as number
+      } else {
+        targetAuthor = author.id
+      }
+    }
     setSubmitting(true)
 
     const payload = {
-      author_id: authorId,
+      author_id: targetAuthor,
       title: title.trim(),
       release_date: releaseDate || null,
       date_precision: precision,
@@ -87,6 +116,12 @@ export function BookForm({ authorId, book, onSaved, onCancel }: BookFormProps) {
 
   return (
     <form className="crud-form" onSubmit={handleSubmit}>
+      {authorId === undefined && (
+        <label>
+          Author *
+          <AuthorPicker authors={authors} value={author} onChange={setAuthor} />
+        </label>
+      )}
       <label>
         Title *
         <input

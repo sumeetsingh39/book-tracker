@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "./hooks/useAuth";
 import { LoginForm } from "./components/LoginForm";
 import { Modal } from "./components/Modal";
@@ -35,12 +35,15 @@ function App() {
   const { user, loading: authLoading, signIn, signOut } = useAuth();
   const [tab, setTab] = useState<Tab>(getInitialTab);
   const [visited, setVisited] = useState<Record<Tab, boolean>>(() => ({
-    releases: getInitialTab() === "releases",
+    // Always loaded: it supplies the Due count shown on its tab.
+    releases: true,
     authors: getInitialTab() === "authors",
     library: getInitialTab() === "library",
   }));
   const [showLogin, setShowLogin] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [dueCount, setDueCount] = useState(0);
+  const onDueCount = useCallback((n: number) => setDueCount(n), []);
   const releasesRef = useRef<ReleasesPageHandle>(null);
   const authorsRef = useRef<AuthorsPageHandle>(null);
   const libraryRef = useRef<LibraryPageHandle>(null);
@@ -50,6 +53,10 @@ function App() {
   useEffect(() => {
     localStorage.setItem(TAB_STORAGE_KEY, tab);
   }, [tab]);
+
+  useEffect(() => {
+    document.title = dueCount ? `(${dueCount}) Book Tracker` : "Book Tracker";
+  }, [dueCount]);
 
   const handleFor = (t: Tab) =>
     t === "releases"
@@ -65,6 +72,21 @@ function App() {
     // so an edit made on one shows on the other.
     if (next !== "library" && visited[next]) handleFor(next)?.refresh();
   };
+
+  // "/" jumps to the current tab's search box.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "/" || e.ctrlKey || e.metaKey || e.altKey) return;
+      const el = e.target as HTMLElement;
+      if (el.closest("input, textarea, select, [contenteditable]")) return;
+      const handle = tab === "releases" ? releasesRef.current : tab === "authors" ? authorsRef.current : null;
+      if (!handle) return;
+      e.preventDefault();
+      handle.focusSearch();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [tab]);
 
   const handleRefresh = async () => {
     const handle = handleFor(tab);
@@ -96,6 +118,11 @@ function App() {
             onClick={() => switchTab("releases")}
           >
             Releases
+            {dueCount > 0 && (
+              <span className="tab-badge" title={`${dueCount} due`}>
+                {dueCount}
+              </span>
+            )}
           </button>
           <button
             role="tab"
@@ -117,6 +144,24 @@ function App() {
         <div className="auth-bar">
           {authLoading ? null : isLoggedIn ? (
             <>
+              {tab !== "library" && (
+                <button
+                  className="btn-small"
+                  onClick={() =>
+                    (tab === "releases" ? releasesRef.current : authorsRef.current)?.openAddBook()
+                  }
+                >
+                  <Plus weight="bold" aria-hidden /> Book
+                </button>
+              )}
+              {tab === "library" && (
+                <button
+                  className="btn-small"
+                  onClick={() => libraryRef.current?.openAddTbr()}
+                >
+                  <Plus weight="bold" aria-hidden /> TBR
+                </button>
+              )}
               {tab === "authors" && (
                 <button
                   className="btn-small"
@@ -154,7 +199,11 @@ function App() {
           className={`tab-pane ${tab === "releases" ? "tab-pane-active" : ""}`}
           hidden={tab !== "releases"}
         >
-          <ReleasesPage ref={releasesRef} isLoggedIn={isLoggedIn} />
+          <ReleasesPage
+            ref={releasesRef}
+            isLoggedIn={isLoggedIn}
+            onDueCount={onDueCount}
+          />
         </div>
       )}
       {visited.authors && (

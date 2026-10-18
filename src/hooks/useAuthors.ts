@@ -79,6 +79,7 @@ export function useAuthors() {
 
   return {
     authors: sorted,
+    allAuthors: authors,
     loading,
     error,
     search,
