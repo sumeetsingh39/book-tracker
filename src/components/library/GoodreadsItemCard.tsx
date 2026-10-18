@@ -1,13 +1,17 @@
+import { Star } from '@phosphor-icons/react'
 import type { GrItem } from '../../lib/types'
 
 function Stars({ rating }: { rating: number }) {
   if (!rating) return <span className="rating-none">unrated</span>
-  const filled = '★'.repeat(rating)
-  const empty = '☆'.repeat(5 - rating)
   return (
-    <span className="rating" aria-label={`${rating} of 5 stars`}>
-      <span className="rating-filled">{filled}</span>
-      <span className="rating-empty">{empty}</span>
+    <span className="rating" role="img" aria-label={`${rating} of 5 stars`}>
+      {[1, 2, 3, 4, 5].map((n) =>
+        n <= rating ? (
+          <Star key={n} weight="fill" className="rating-filled" />
+        ) : (
+          <Star key={n} weight="light" className="rating-empty" />
+        ),
+      )}
     </span>
   )
 }

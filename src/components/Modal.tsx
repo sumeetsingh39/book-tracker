@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
+import { X } from '@phosphor-icons/react'
 
 interface ModalProps {
   open: boolean
@@ -38,8 +39,8 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
       <div className="modal">
         <div className="modal-header">
           <h2>{title}</h2>
-          <button className="modal-close" onClick={onClose}>
-            &times;
+          <button className="modal-close" onClick={onClose} aria-label="Close">
+            <X weight="light" aria-hidden />
           </button>
         </div>
         <div className="modal-body">{children}</div>

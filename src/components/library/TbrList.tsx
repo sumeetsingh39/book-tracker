@@ -43,13 +43,12 @@ function TbrRow({
       </div>
       {isLoggedIn && (
         <button
-          className="btn-icon btn-danger"
-          title="Remove from TBR"
+          className="text-action text-action-danger"
           onClick={() => {
             if (confirm(`Remove "${item.title}" from TBR?`)) onRemove(item.id)
           }}
         >
-          &times;
+          Remove
         </button>
       )}
     </li>

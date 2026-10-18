@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { useAuth } from "./hooks/useAuth";
 import { LoginForm } from "./components/LoginForm";
 import { Modal } from "./components/Modal";
+import { ThemeToggle } from "./components/ThemeToggle";
+import { Plus } from "@phosphor-icons/react";
 import { AuthorsPage, type AuthorsPageHandle } from "./components/AuthorsPage";
 import {
   LibraryPage,
@@ -12,6 +14,13 @@ import "./App.css";
 type Tab = "authors" | "library";
 
 const TAB_STORAGE_KEY = "activeTab";
+
+const today = new Date().toLocaleDateString("en-US", {
+  weekday: "long",
+  month: "long",
+  day: "numeric",
+  year: "numeric",
+});
 
 function getInitialTab(): Tab {
   const stored = localStorage.getItem(TAB_STORAGE_KEY);
@@ -54,11 +63,33 @@ function App() {
 
   return (
     <div className="app">
-      <header className="app-header">
-        <h1>Book Tracker</h1>
+      <header className="masthead">
+        <div className="masthead-bar">
+          <span className="dateline">{today}</span>
+          <ThemeToggle />
+        </div>
+        <h1 className="masthead-title">Book Tracker</h1>
         <p className="subtitle">Upcoming releases from authors you follow</p>
       </header>
       <div className="app-toolbar">
+        <nav className="tabs" role="tablist">
+          <button
+            role="tab"
+            aria-selected={tab === "authors"}
+            className={`tab ${tab === "authors" ? "tab-active" : ""}`}
+            onClick={() => switchTab("authors")}
+          >
+            Authors
+          </button>
+          <button
+            role="tab"
+            aria-selected={tab === "library"}
+            className={`tab ${tab === "library" ? "tab-active" : ""}`}
+            onClick={() => switchTab("library")}
+          >
+            My Library
+          </button>
+        </nav>
         <div className="auth-bar">
           {authLoading ? null : isLoggedIn ? (
             <>
@@ -67,7 +98,7 @@ function App() {
                   className="btn-small"
                   onClick={() => authorsRef.current?.openAddAuthor()}
                 >
-                  + Author
+                  <Plus weight="bold" aria-hidden /> Author
                 </button>
               )}
               <button
@@ -92,24 +123,6 @@ function App() {
             </button>
           )}
         </div>
-        <nav className="tabs" role="tablist">
-          <button
-            role="tab"
-            aria-selected={tab === "authors"}
-            className={`tab ${tab === "authors" ? "tab-active" : ""}`}
-            onClick={() => switchTab("authors")}
-          >
-            Authors
-          </button>
-          <button
-            role="tab"
-            aria-selected={tab === "library"}
-            className={`tab ${tab === "library" ? "tab-active" : ""}`}
-            onClick={() => switchTab("library")}
-          >
-            My Library
-          </button>
-        </nav>
       </div>
 
       {visited.authors && (

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Plus } from '@phosphor-icons/react'
 import { supabase } from '../lib/supabase'
 import { Modal } from './Modal'
 import { AuthorForm } from './AuthorForm'
@@ -103,18 +104,16 @@ export function AuthorCard({ author, isLoggedIn, onChanged }: AuthorCardProps) {
                   {isLoggedIn && (
                     <span className="book-actions">
                       <button
-                        className="btn-icon"
-                        title="Edit book"
+                        className="text-action"
                         onClick={() => setEditingBook(book)}
                       >
-                        &#9998;
+                        Edit
                       </button>
                       <button
-                        className="btn-icon btn-danger"
-                        title="Delete book"
+                        className="text-action text-action-danger"
                         onClick={() => deleteBook(book)}
                       >
-                        &times;
+                        Remove
                       </button>
                     </span>
                   )}
@@ -129,7 +128,7 @@ export function AuthorCard({ author, isLoggedIn, onChanged }: AuthorCardProps) {
         {isLoggedIn && (
           <div className="card-actions">
             <button className="btn-small" onClick={() => setAddingBook(true)}>
-              + Book
+              <Plus weight="bold" aria-hidden /> Book
             </button>
             <button className="btn-small" onClick={() => setEditingAuthor(true)}>
               Edit

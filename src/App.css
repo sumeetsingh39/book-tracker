@@ -1,30 +1,50 @@
 /* =========================================================
-   Book Tracker — three themes (terminal / cyber / noir)
-   All dark. Accent + type differ per theme.
+   Book Tracker — literary-magazine look, light and dark
+   Headlines: Besley (Clarendon-style slab). Interface text:
+   Atkinson Hyperlegible Next. Libron for the subtitle and prose
+   (reviews, notes). All SIL OFL, self-hosted.
    ========================================================= */
 @font-face {
-  font-family: "Bookerly";
-  src: url("./assets/Bookerly-Regular.ttf") format("truetype");
-  font-weight: normal;
+  font-family: "Libron";
+  src: url("./assets/fonts/Libron-Regular.woff2") format("woff2");
+  font-weight: 400;
   font-style: normal;
+  font-display: swap;
 }
 @font-face {
-  font-family: "Bookerly";
-  src: url("./assets/Bookerly-Bold.ttf") format("truetype");
-  font-weight: bold;
+  font-family: "Libron";
+  src: url("./assets/fonts/Libron-Bold.woff2") format("woff2");
+  font-weight: 700;
   font-style: normal;
+  font-display: swap;
 }
 @font-face {
-  font-family: "Bookerly";
-  src: url("./assets/Bookerly-Italic.ttf") format("truetype");
-  font-weight: normal;
+  font-family: "Libron";
+  src: url("./assets/fonts/Libron-Italic.woff2") format("woff2");
+  font-weight: 400;
   font-style: italic;
+  font-display: swap;
 }
 @font-face {
-  font-family: "Bookerly";
-  src: url("./assets/Bookerly-BoldItalic.ttf") format("truetype");
-  font-weight: bold;
+  font-family: "Besley";
+  src: url("./assets/fonts/Besley.woff2") format("woff2");
+  font-weight: 400 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Atkinson Hyperlegible Next";
+  src: url("./assets/fonts/AtkinsonHyperlegibleNext.woff2") format("woff2");
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Atkinson Hyperlegible Next";
+  src: url("./assets/fonts/AtkinsonHyperlegibleNext-Italic.woff2") format("woff2");
+  font-weight: 200 800;
   font-style: italic;
+  font-display: swap;
 }
 
 * {
@@ -33,45 +53,51 @@
   padding: 0;
 }
 
-/* Terminal — retro CRT, amber, mono-first */
+/* Light: newsprint and ink */
 :root {
-  --bg: #0e1013;
-  --surface: #171a1f;
-  --surface-hover: #1e232a;
-  --border: #2a2f36;
-  --border-strong: #3a424c;
-  --text: #d8d4c9;
-  --text-muted: #7a828d;
-  --accent: #ddb860;
-  --accent-dim: #8a6d35;
-  --accent-glow: rgba(221, 184, 96, 0.28);
-  --accent-contrast: #0e1013;
-  --upcoming: #8ab060;
-  --overdue: #d97559;
-  --released: #7a828d;
-  --shadow: rgba(0, 0, 0, 0.55);
-  --font-display: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
-  --font-body: "Bookerly", "IBM Plex Serif", Georgia, serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
-  --radius: 4px;
-  --toolbar-texture: repeating-linear-gradient(
-    to bottom,
-    transparent 0,
-    transparent 3px,
-    rgba(221, 184, 96, 0.045) 3px,
-    rgba(221, 184, 96, 0.045) 4px
-  );
+  --bg: #f5f0e6;
+  --surface: #fbf8f2;
+  --surface-hover: #efe8db;
+  --text: #1d1b18;
+  --text-muted: #6b6358;
+  --rule: #1d1b18;
+  --border: #d8cfbf;
+  --border-strong: #b5aa98;
+  --accent: #b2261d;
+  --accent-contrast: #fbf8f2;
+  --upcoming: #2e6b3c;
+  --overdue: #b2261d;
+  --released: #8a8174;
+  --shadow: rgba(60, 45, 25, 0.16);
+  --backdrop: rgba(40, 32, 22, 0.45);
+  --font-display: "Besley", "Clarendon", Rockwell, Georgia, serif;
+  --font-body: "Libron", "Newsreader", Georgia, serif;
+  --font-sans: "Atkinson Hyperlegible Next", "NV Legible Next", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --radius: 2px;
+  color-scheme: light;
+}
+
+/* Dark: lamp-lit page, warm off-white ink */
+:root[data-theme="dark"] {
+  --bg: #171512;
+  --surface: #1f1c18;
+  --surface-hover: #29251f;
+  --text: #e9e3d6;
+  --text-muted: #a0968a;
+  --rule: #d9d1c2;
+  --border: #38332c;
+  --border-strong: #554e44;
+  --accent: #e2705d;
+  --accent-contrast: #171512;
+  --upcoming: #8fbf88;
+  --overdue: #e2705d;
+  --released: #857c70;
+  --shadow: rgba(0, 0, 0, 0.5);
+  --backdrop: rgba(0, 0, 0, 0.6);
   color-scheme: dark;
 }
 
-/* Cyber — near-black navy, cyan neon, geometric sans */
-/* Removed alternate themes; app uses a single terminal theme. */
-
-/* =========================================================
-   Keyframes
-   ========================================================= */
-
-@keyframes tab-fade-in {
+@keyframes fade-in {
   from {
     opacity: 0;
     transform: translateY(4px);
@@ -82,291 +108,200 @@
   }
 }
 
-@keyframes section-body-in {
-  from {
-    opacity: 0;
-    transform: translateY(-2px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes star-reveal {
-  from {
-    opacity: 0;
-    transform: translateX(-6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes priority-pulse {
-  0% {
-    box-shadow: 0 0 0 0 var(--accent-glow);
-  }
-  70% {
-    box-shadow: 0 0 0 6px transparent;
-  }
-  100% {
-    box-shadow: 0 0 0 0 transparent;
-  }
-}
-
-@keyframes candle-flicker {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  48% {
-    opacity: 0.92;
-  }
-  52% {
-    opacity: 1;
-  }
-  63% {
-    opacity: 0.96;
-  }
-}
-
-@keyframes cursor-blink {
-  0%,
-  49% {
-    opacity: 1;
-  }
-  50%,
-  100% {
-    opacity: 0;
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
   }
 }
 
 /* =========================================================
-   Base layout + typography
+   Base
    ========================================================= */
 
 body {
-  font-family: var(--font-body);
-  font-optical-sizing: auto;
+  font-family: var(--font-sans);
+  font-size: 1.1rem;
   background: var(--bg);
   color: var(--text);
-  line-height: 1.6;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
   min-height: 100vh;
+  transition:
+    background 0.2s,
+    color 0.2s;
 }
 
 .app {
-  max-width: 860px;
+  max-width: 920px;
   margin: 0 auto;
-  padding: 2rem 1.25rem 3rem;
+  padding: 1.25rem 1.5rem 4rem;
 }
 
-/* Terminal-style overlays and accessibility polish */
-.app {
-  position: relative;
-}
-
-/* subtle CRT scanlines + vignette */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background-image: linear-gradient(
-    rgba(255, 255, 255, 0.02) 1px,
-    transparent 1px
-  );
-  background-size: 100% 3px;
-  mix-blend-mode: overlay;
-  opacity: 0.06;
-  z-index: 40;
-}
-
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background: radial-gradient(
-    ellipse at center,
-    transparent 55%,
-    rgba(0, 0, 0, 0.55) 100%
-  );
-  z-index: 39;
-}
-
-/* container bezel / glow */
-.app::before {
-  content: "";
-  position: absolute;
-  inset: -8px;
-  border-radius: calc(var(--radius) + 8px);
-  pointer-events: none;
-}
-
-/* selection and caret */
 ::selection {
-  background: color-mix(in oklab, var(--accent) 30%, transparent);
-  color: var(--accent-contrast);
+  background: color-mix(in oklab, var(--accent) 25%, transparent);
 }
+
 input,
 textarea,
-.search-input {
+select {
   caret-color: var(--accent);
 }
 
-/* focus-visible accessibility style */
 :focus-visible {
-  outline: 2px solid color-mix(in oklab, var(--accent) 40%, transparent);
-  outline-offset: 3px;
-  border-radius: 4px;
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
-/* accent pulse for header */
-@keyframes accent-pulse {
-  0% {
-    text-shadow: 0 0 0 rgba(0, 0, 0, 0);
-  }
-  50% {
-    text-shadow: 0 0 12px var(--accent-glow);
-  }
-  100% {
-    text-shadow: 0 0 0 rgba(0, 0, 0, 0);
-  }
-}
-.app-header h1 {
-  animation: accent-pulse 4s ease-in-out infinite;
+a {
+  color: inherit;
 }
 
-/* tabs and buttons get soft glow */
-.tab-active {
-  box-shadow: 0 6px 18px var(--accent-glow);
-}
-.btn-small:hover {
-  box-shadow: 0 0 10px var(--accent-glow);
-}
-
-/* improved inputs and small transitions */
-.search-input,
-.filter-group select,
-.book-item {
-  transition:
-    box-shadow 0.18s,
-    transform 0.18s,
-    border-color 0.18s;
-}
-
-/* scrollbar styling */
-*::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
-*::-webkit-scrollbar-track {
-  background: transparent;
-}
-*::-webkit-scrollbar-thumb {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.05),
-    rgba(255, 255, 255, 0.02)
-  );
-  border: 1px solid rgba(255, 255, 255, 0.03);
-  border-radius: 999px;
-}
-
-.app-header {
-  text-align: center;
-  margin-bottom: 0.9rem;
-}
-
-.app-header h1 {
-  font-family: var(--font-display);
-  font-size: 1.9rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  color: var(--text);
-}
-
-/* Terminal: blinking cursor after the title */
-.app-header h1::after {
-  content: "_";
-  display: inline-block;
-  color: var(--accent);
-  margin-left: 0.15rem;
-  animation: cursor-blink 1s steps(2, end) infinite;
-}
-
-.subtitle {
-  color: var(--text-muted);
-  font-size: 0.95rem;
-  font-style: italic;
-  margin-top: 0.3rem;
+/* Small uppercase sans used for labels, kickers and controls */
+.dateline,
+.theme-option,
+.tab,
+.btn-small,
+.count,
+.filter-group label,
+.tbr-filter,
+.book-status,
+.book-date,
+.gr-date,
+.author-links a,
+.collapsible-count,
+.collapsible-group > .collapsible-header .collapsible-title,
+.form-actions button,
+.login-form button,
+.tbr-form button,
+.tbr-priority,
+.crud-form label {
+  font-family: var(--font-sans);
+  font-feature-settings: "tnum";
 }
 
 /* =========================================================
-   Sticky sub-header toolbar
+   Masthead
+   ========================================================= */
+
+.masthead {
+  text-align: center;
+  border-bottom: 4px double var(--rule);
+  padding-bottom: 1rem;
+}
+
+.masthead-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding-bottom: 0.6rem;
+  margin-bottom: 1.1rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.dateline {
+  font-size: 0.77rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.masthead-title {
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 7vw, 4rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  font-family: var(--font-body);
+  font-style: italic;
+  color: var(--text-muted);
+  font-size: 0.98rem;
+  margin-top: 0.5rem;
+}
+
+/* Theme switcher */
+.theme-toggle {
+  display: inline-flex;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+
+.theme-option {
+  font-size: 0.726rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.28rem 0.6rem;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+
+.theme-option + .theme-option {
+  border-left: 1px solid var(--rule);
+}
+
+.theme-option:hover {
+  color: var(--text);
+}
+
+.theme-option-active,
+.theme-option-active:hover {
+  background: var(--text);
+  color: var(--bg);
+}
+
+/* =========================================================
+   Section navigation (sticky)
    ========================================================= */
 
 .app-toolbar {
   position: sticky;
   top: 0;
   z-index: 20;
-  background: var(--bg);
-  margin-bottom: 1.5rem;
-  padding: 0.5rem 0 0;
-  border-bottom: 1px solid var(--border);
-}
-
-.app-toolbar::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image: var(--toolbar-texture);
-  pointer-events: none;
-  opacity: 0.9;
-}
-
-/* Cyber toolbar styles removed — single terminal theme in use */
-
-.auth-bar {
-  position: relative;
-  z-index: 1;
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
   flex-wrap: wrap;
+  background: var(--bg);
+  border-bottom: 1px solid var(--rule);
+  padding: 0.35rem 0;
+  margin-bottom: 1.75rem;
 }
-
-/* =========================================================
-   Tabs
-   ========================================================= */
 
 .tabs {
-  position: relative;
-  z-index: 1;
   display: flex;
-  justify-content: center;
-  gap: 0.25rem;
-  margin-top: 0.75rem;
+  gap: 1.5rem;
 }
 
 .tab {
-  font-family: var(--font-display);
-  font-size: 0.88rem;
-  padding: 0.5rem 1rem;
+  font-size: 0.858rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 0.55rem 0;
   background: none;
   border: none;
-  border-bottom: 2px solid transparent;
+  border-bottom: 3px solid transparent;
   color: var(--text-muted);
   cursor: pointer;
   transition:
     color 0.15s,
     border-color 0.15s;
-  margin-bottom: -1px;
-  letter-spacing: 0.02em;
 }
 
 .tab:hover {
@@ -374,21 +309,16 @@ textarea,
 }
 
 .tab-active {
-  color: var(--accent);
+  color: var(--text);
   border-bottom-color: var(--accent);
 }
 
-/* Per-theme tab effects removed (terminal theme only). */
-
-/* =========================================================
-   Theme picker
-   ========================================================= */
-
-/* Theme picker controls removed from styles */
-
-/* =========================================================
-   Tab panes
-   ========================================================= */
+.auth-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
 
 .tab-pane {
   display: none;
@@ -396,7 +326,7 @@ textarea,
 
 .tab-pane-active {
   display: block;
-  animation: tab-fade-in 160ms ease-out both;
+  animation: fade-in 160ms ease-out both;
 }
 
 /* =========================================================
@@ -404,91 +334,115 @@ textarea,
    ========================================================= */
 
 .btn-small {
-  font-family: var(--font-display);
-  font-size: 0.78rem;
-  padding: 0.35rem 0.7rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  font-size: 0.748rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.38rem 0.7rem;
+  background: none;
+  border: 1px solid var(--rule);
   border-radius: var(--radius);
-  color: var(--accent);
+  color: var(--text);
   cursor: pointer;
   transition:
     background 0.15s,
-    border-color 0.15s,
-    box-shadow 0.15s;
-  letter-spacing: 0.02em;
+    color 0.15s;
 }
 
 .btn-small:hover {
-  background: var(--surface-hover);
-  border-color: var(--accent-dim);
+  background: var(--text);
+  color: var(--bg);
 }
 
 .btn-small:disabled {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: not-allowed;
+  background: none;
+  color: var(--text);
 }
-
-/* theme-specific button hover removed */
 
 .btn-secondary {
   color: var(--text-muted);
+  border-color: var(--border-strong);
 }
+
 .btn-danger {
   color: var(--overdue);
+  border-color: color-mix(in oklab, var(--overdue) 60%, transparent);
 }
 
-.btn-icon {
+.btn-small svg {
+  font-size: 1.05em;
+}
+
+/* Word actions next to entries: Edit, Remove */
+.text-action {
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0;
   background: none;
   border: none;
+  border-bottom: 1px solid transparent;
   color: var(--text-muted);
   cursor: pointer;
-  font-size: 0.95rem;
-  padding: 0 0.25rem;
-  line-height: 1;
-  transition: color 0.15s;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
 }
 
-.btn-icon:hover {
+.text-action:hover {
   color: var(--text);
+  border-bottom-color: currentColor;
 }
-.btn-icon.btn-danger:hover {
+
+.text-action-danger:hover {
   color: var(--overdue);
 }
 
+.btn-small.btn-danger:hover {
+  background: var(--overdue);
+  color: var(--accent-contrast);
+}
+
+
 /* =========================================================
-   Authors — search bar
+   Authors — search and filters
    ========================================================= */
 
 .search-bar {
-  background: var(--bg);
-  padding: 0.25rem 0 0.85rem;
-  margin-bottom: 1.25rem;
-  border-bottom: 1px solid var(--border);
+  margin-bottom: 1.75rem;
 }
 
 .search-row {
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.5rem;
+  align-items: baseline;
+  gap: 1rem;
+  margin-bottom: 0.6rem;
 }
 
 .search-input {
   flex: 1;
-  padding: 0.55rem 0.75rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  min-width: 0;
+  padding: 0.45rem 0;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--rule);
+  border-radius: 0;
   color: var(--text);
-  font-family: inherit;
-  font-size: 0.9rem;
+  font-family: var(--font-sans);
+  font-size: 1.265rem;
   outline: none;
-  transition: border-color 0.15s;
 }
 
 .search-input:focus {
-  border-color: var(--accent);
+  border-bottom-color: var(--accent);
+  box-shadow: 0 1px 0 var(--accent);
 }
 
 .search-input::placeholder {
@@ -497,15 +451,15 @@ textarea,
 }
 
 .count {
-  font-family: var(--font-mono);
   color: var(--text-muted);
-  font-size: 0.82rem;
+  font-size: 0.792rem;
+  letter-spacing: 0.08em;
   white-space: nowrap;
 }
 
 .filter-row {
   display: flex;
-  gap: 1rem;
+  gap: 1.25rem;
   flex-wrap: wrap;
 }
 
@@ -516,99 +470,88 @@ textarea,
 }
 
 .filter-group label {
-  font-size: 0.78rem;
+  font-size: 0.726rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   color: var(--text-muted);
-  font-style: italic;
 }
 
-.filter-group select {
-  padding: 0.3rem 0.45rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+.filter-group select,
+.tbr-filter select {
+  padding: 0.2rem 0.3rem;
+  background: var(--bg);
+  border: none;
+  border-bottom: 1px solid var(--border-strong);
+  border-radius: 0;
   color: var(--text);
-  font-family: inherit;
-  font-size: 0.82rem;
+  font-family: var(--font-sans);
+  font-size: 1.045rem;
   outline: none;
   cursor: pointer;
 }
 
-.filter-group select:focus {
-  border-color: var(--accent);
+.filter-group select:focus,
+.tbr-filter select:focus {
+  border-bottom-color: var(--accent);
 }
 
 /* =========================================================
-   Authors — cards
+   Authors — entries set in two ruled columns
    ========================================================= */
 
 .author-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1rem;
+  column-gap: 2.5rem;
 }
 
-@media (min-width: 600px) {
+@media (min-width: 680px) {
   .author-grid {
     grid-template-columns: 1fr 1fr;
   }
 }
 
 .author-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1rem 1.1rem;
-  box-shadow: 0 1px 3px var(--shadow);
-  transition:
-    box-shadow 0.2s,
-    border-color 0.2s,
-    transform 0.2s;
-}
-
-.author-card:hover {
-  border-color: var(--accent-dim);
-  box-shadow:
-    0 3px 12px var(--shadow),
-    0 0 0 1px var(--accent-glow);
-  transform: translateY(-1px);
+  border-top: 1px solid var(--rule);
+  padding: 0.9rem 0 1.6rem;
 }
 
 .author-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  gap: 0.5rem;
+  align-items: baseline;
+  gap: 0.75rem;
   margin-bottom: 0.5rem;
 }
 
 .author-name {
   font-family: var(--font-display);
-  font-size: 1.02rem;
-  font-weight: 600;
+  font-size: 1.4rem;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
 }
 
 .author-links {
   display: flex;
-  gap: 0.35rem;
+  gap: 0.6rem;
   flex-shrink: 0;
 }
 
 .author-links a {
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
+  font-size: 0.704rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   color: var(--accent);
   text-decoration: none;
-  padding: 0.12rem 0.35rem;
-  border: 1px solid var(--border);
-  border-radius: 3px;
-  transition:
-    background 0.15s,
-    border-color 0.15s;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.15s;
 }
 
 .author-links a:hover {
-  background: var(--surface-hover);
-  border-color: var(--accent-dim);
+  border-bottom-color: var(--accent);
 }
 
 .book-list {
@@ -619,10 +562,13 @@ textarea,
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  gap: 0.5rem;
-  padding: 0.4rem 0;
-  border-top: 1px solid var(--border);
-  font-size: 0.9rem;
+  gap: 0.75rem;
+  padding: 0.45rem 0;
+  border-top: 1px dotted var(--border-strong);
+}
+
+.book-item:first-child {
+  border-top: none;
 }
 
 .book-title {
@@ -632,47 +578,38 @@ textarea,
 
 .book-meta {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.6rem;
   align-items: baseline;
   flex-shrink: 0;
 }
 
 .book-status {
-  font-family: var(--font-mono);
   font-size: 0.66rem;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  padding: 0.12rem 0.38rem;
-  border-radius: 3px;
+  letter-spacing: 0.12em;
 }
 
 .status-upcoming {
   color: var(--upcoming);
-  background: color-mix(in oklab, var(--upcoming) 14%, transparent);
 }
 
 .status-overdue {
   color: var(--overdue);
-  background: color-mix(in oklab, var(--overdue) 14%, transparent);
 }
 
 .status-released {
   color: var(--released);
-  background: color-mix(in oklab, var(--released) 14%, transparent);
 }
 
 .book-date {
-  font-family: var(--font-mono);
   color: var(--text-muted);
-  font-size: 0.76rem;
+  font-size: 0.814rem;
   white-space: nowrap;
 }
 
 .no-books {
   color: var(--text-muted);
-  font-size: 0.85rem;
-  font-style: italic;
 }
 
 .state-msg {
@@ -680,7 +617,6 @@ textarea,
   text-align: center;
   color: var(--text-muted);
   padding: 2.5rem 0;
-  font-style: italic;
 }
 
 .state-msg.error {
@@ -690,14 +626,13 @@ textarea,
 .card-actions {
   display: flex;
   gap: 0.4rem;
-  margin-top: 0.6rem;
-  padding-top: 0.5rem;
-  border-top: 1px solid var(--border);
+  margin-top: 0.75rem;
 }
 
 .book-actions {
   display: flex;
-  gap: 0.1rem;
+  gap: 0.75rem;
+  margin-left: 0.25rem;
 }
 
 /* =========================================================
@@ -708,45 +643,45 @@ textarea,
   position: fixed;
   inset: 0;
   z-index: 100;
-  background: rgba(0, 0, 0, 0.55);
-  -webkit-backdrop-filter: blur(2px);
-  backdrop-filter: blur(2px);
+  background: var(--backdrop);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 1rem;
-  animation: tab-fade-in 150ms ease-out;
+  animation: fade-in 150ms ease-out;
 }
 
 .modal {
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: calc(var(--radius) * 2);
+  border: 1px solid var(--rule);
+  border-top: 4px solid var(--rule);
+  border-radius: var(--radius);
   width: 100%;
-  max-width: 420px;
+  max-width: 440px;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 10px 40px var(--shadow);
+  box-shadow: 0 18px 50px var(--shadow);
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 1rem 1rem 0.5rem;
+  align-items: baseline;
+  padding: 1.1rem 1.25rem 0.5rem;
 }
 
 .modal-header h2 {
   font-family: var(--font-display);
-  font-size: 1.05rem;
-  font-weight: 600;
+  font-size: 1.35rem;
+  font-weight: 700;
 }
 
 .modal-close {
+  display: inline-flex;
   background: none;
   border: none;
   color: var(--text-muted);
-  font-size: 1.4rem;
+  font-size: 1.5rem;
   cursor: pointer;
   line-height: 1;
 }
@@ -756,7 +691,7 @@ textarea,
 }
 
 .modal-body {
-  padding: 0.5rem 1rem 1rem;
+  padding: 0.5rem 1.25rem 1.25rem;
 }
 
 /* =========================================================
@@ -767,35 +702,50 @@ textarea,
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.9rem;
 }
 
 .crud-form label {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  font-size: 0.78rem;
+  gap: 0.3rem;
+  font-size: 0.704rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   color: var(--text-muted);
-  font-style: italic;
 }
 
 .crud-form input,
 .crud-form select,
-.login-form input {
-  padding: 0.55rem 0.65rem;
+.login-form input,
+.tbr-form input,
+.tbr-form select {
+  padding: 0.5rem 0.6rem;
   background: var(--bg);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-strong);
   border-radius: var(--radius);
   color: var(--text);
-  font-family: inherit;
-  font-size: 0.9rem;
+  font-family: var(--font-sans);
+  font-size: 1.1rem;
+  letter-spacing: normal;
+  text-transform: none;
   outline: none;
 }
 
 .crud-form input:focus,
 .crud-form select:focus,
-.login-form input:focus {
+.login-form input:focus,
+.tbr-form input:focus,
+.tbr-form select:focus {
   border-color: var(--accent);
+}
+
+.crud-form input::placeholder,
+.login-form input::placeholder,
+.tbr-form input::placeholder {
+  color: var(--text-muted);
+  font-style: italic;
 }
 
 .form-actions {
@@ -806,58 +756,63 @@ textarea,
 }
 
 .form-actions button,
-.login-form button {
-  font-family: var(--font-display);
-  padding: 0.5rem 1rem;
+.login-form button,
+.tbr-form button {
+  font-size: 0.77rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0.6rem 1.1rem;
   border-radius: var(--radius);
-  border: 1px solid var(--accent);
-  background: var(--accent);
-  color: var(--accent-contrast);
-  font-weight: 600;
-  font-size: 0.85rem;
+  border: 1px solid var(--text);
+  background: var(--text);
+  color: var(--bg);
   cursor: pointer;
   transition:
-    box-shadow 0.15s,
-    transform 0.15s;
-  letter-spacing: 0.02em;
+    background 0.15s,
+    border-color 0.15s;
 }
 
 .form-actions button:hover,
-.login-form button:hover {
-  box-shadow: 0 0 0 2px var(--accent-glow);
+.login-form button:hover,
+.tbr-form button:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-contrast);
 }
 
 .form-actions button:disabled,
-.login-form button:disabled {
-  opacity: 0.5;
+.login-form button:disabled,
+.tbr-form button:disabled {
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
-.form-actions .btn-secondary {
-  background: var(--surface);
+.form-actions .btn-secondary,
+.form-actions .btn-secondary:hover {
+  background: none;
   color: var(--text-muted);
-  border-color: var(--border);
+  border-color: var(--border-strong);
 }
 
 .form-error {
   color: var(--overdue);
-  font-size: 0.8rem;
 }
 
 /* =========================================================
-   Collapsible
+   Collapsible sections
    ========================================================= */
 
 .collapsible {
-  margin-bottom: 1.25rem;
+  margin-bottom: 2rem;
 }
 
 .collapsible-header {
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  align-items: baseline;
+  gap: 0.6rem;
   width: 100%;
-  padding: 0.5rem 0;
+  padding: 0.6rem 0 0.4rem;
   background: none;
   border: none;
   text-align: left;
@@ -866,14 +821,19 @@ textarea,
   font-family: inherit;
 }
 
+.collapsible-section > .collapsible-header {
+  border-top: 3px solid var(--rule);
+}
+
 .collapsible-header:hover .collapsible-title {
   color: var(--accent);
 }
 
 .collapsible-chevron {
-  display: inline-block;
+  flex-shrink: 0;
+  align-self: center;
   color: var(--text-muted);
-  font-size: 0.7rem;
+  font-size: 1.1rem;
   transition:
     transform 0.15s ease,
     color 0.15s ease;
@@ -886,35 +846,39 @@ textarea,
 
 .collapsible-title {
   margin: 0;
-  font-weight: 600;
-  font-family: var(--font-display);
+  transition: color 0.15s;
 }
 
 .collapsible-section > .collapsible-header .collapsible-title {
-  font-size: 1.1rem;
-  letter-spacing: 0.02em;
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
 }
 
 .collapsible-group > .collapsible-header .collapsible-title {
-  font-size: 0.8rem;
+  font-size: 0.792rem;
+  font-weight: 700;
   color: var(--accent);
-  letter-spacing: 0.08em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 
 .collapsible-count {
   color: var(--text-muted);
-  font-weight: 400;
-  font-family: var(--font-mono);
+  font-size: 0.792rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
 }
 
 .collapsible-body {
-  margin-top: 0.5rem;
-  animation: section-body-in 180ms ease-out;
+  margin-top: 0.6rem;
+  animation: fade-in 180ms ease-out;
 }
 
 /* =========================================================
-   Library
+   Library — Goodreads shelves
    ========================================================= */
 
 .library-page {
@@ -922,14 +886,13 @@ textarea,
   flex-direction: column;
 }
 
-/* Goodreads cards */
 .gr-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 0.85rem;
+  column-gap: 2.5rem;
 }
 
-@media (min-width: 600px) {
+@media (min-width: 680px) {
   .gr-grid {
     grid-template-columns: 1fr 1fr;
   }
@@ -937,102 +900,92 @@ textarea,
 
 .gr-card {
   display: flex;
-  gap: 0.85rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 0.85rem;
-  box-shadow: 0 1px 3px var(--shadow);
-  transition:
-    border-color 0.15s,
-    box-shadow 0.15s,
-    transform 0.15s;
-}
-
-.gr-card:hover {
-  border-color: var(--accent-dim);
-  box-shadow:
-    0 3px 12px var(--shadow),
-    0 0 0 1px var(--accent-glow);
-  transform: translateY(-1px);
+  gap: 1rem;
+  padding: 1rem 0;
+  border-top: 1px solid var(--border);
 }
 
 .gr-cover {
-  width: 60px;
-  height: 90px;
+  width: 64px;
+  height: 96px;
   object-fit: cover;
-  border-radius: 3px;
   flex-shrink: 0;
   background: var(--surface-hover);
+  border: 1px solid var(--border);
+  box-shadow: 2px 3px 8px var(--shadow);
 }
 
 .gr-cover-placeholder {
-  border: 1px dashed var(--border);
+  border-style: dashed;
+  box-shadow: none;
 }
 
 .gr-meta {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.2rem;
   min-width: 0;
   flex: 1;
 }
 
 .gr-title {
   font-family: var(--font-display);
-  font-size: 0.95rem;
-  font-weight: 600;
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1.2;
   color: var(--text);
   text-decoration: none;
+  transition: color 0.15s;
 }
 
-.gr-title:hover {
+a.gr-title:hover {
   color: var(--accent);
 }
 
 .gr-author {
-  font-size: 0.85rem;
   color: var(--text-muted);
-  font-style: italic;
 }
 
 .gr-row {
   display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  margin-top: 0.2rem;
+  align-items: baseline;
+  gap: 0.7rem;
+  margin-top: 0.15rem;
 }
 
 .rating {
+  display: inline-flex;
+  gap: 0.1rem;
+  align-self: center;
   font-size: 0.95rem;
-  letter-spacing: 0.05em;
-  animation: star-reveal 320ms ease-out both;
 }
 
 .rating-filled {
   color: var(--accent);
 }
+
 .rating-empty {
   color: var(--border-strong);
 }
 
 .rating-none {
-  font-size: 0.75rem;
+  font-size: 0.935rem;
   color: var(--text-muted);
-  font-style: italic;
 }
 
 .gr-date {
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: 0.748rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--text-muted);
 }
 
 .gr-review {
-  font-size: 0.85rem;
-  color: var(--text);
-  margin-top: 0.35rem;
-  line-height: 1.55;
+  font-family: var(--font-body);
+  font-size: 0.98rem;
+  margin-top: 0.4rem;
+  line-height: 1.5;
   display: -webkit-box;
   -webkit-line-clamp: 4;
   line-clamp: 4;
@@ -1041,14 +994,14 @@ textarea,
 }
 
 /* =========================================================
-   TBR
+   Library — To Be Read
    ========================================================= */
 
 .tbr-form {
   display: grid;
   grid-template-columns: 2fr 1.5fr 1.3fr 1.3fr 2fr auto;
   gap: 0.5rem;
-  margin-bottom: 0.85rem;
+  margin-bottom: 1rem;
 }
 
 @media (max-width: 720px) {
@@ -1062,132 +1015,91 @@ textarea,
 
 .tbr-form input,
 .tbr-form select {
-  padding: 0.45rem 0.6rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  color: var(--text);
-  font-family: inherit;
-  font-size: 0.85rem;
-  outline: none;
-}
-
-.tbr-form input:focus,
-.tbr-form select:focus {
-  border-color: var(--accent);
-}
-
-.tbr-form button {
-  font-family: var(--font-display);
-  padding: 0.45rem 0.9rem;
-  border-radius: var(--radius);
-  border: 1px solid var(--accent);
-  background: var(--accent);
-  color: var(--accent-contrast);
-  font-weight: 600;
-  font-size: 0.85rem;
-  cursor: pointer;
-  letter-spacing: 0.02em;
-}
-
-.tbr-form button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+  font-size: 1.012rem;
 }
 
 .tbr-controls {
   display: flex;
   justify-content: flex-end;
-  margin-bottom: 0.6rem;
+  margin-bottom: 0.4rem;
 }
 
 .tbr-filter {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  font-size: 0.8rem;
+  font-size: 0.726rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   color: var(--text-muted);
-  font-style: italic;
 }
 
 .tbr-filter select {
-  padding: 0.3rem 0.5rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  color: var(--text);
-  font-family: inherit;
-  font-size: 0.8rem;
-  outline: none;
-  cursor: pointer;
-  font-style: normal;
+  letter-spacing: normal;
+  text-transform: none;
 }
 
 .tbr-groups {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.25rem;
+}
+
+.tbr-groups .collapsible {
+  margin-bottom: 0.75rem;
 }
 
 .tbr-list {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
 }
 
 .tbr-item {
   display: flex;
-  align-items: flex-start;
-  gap: 0.6rem;
-  padding: 0.55rem 0.75rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  transition: border-color 0.15s;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 0.55rem 0;
+  border-top: 1px dotted var(--border-strong);
 }
 
-.tbr-item:hover {
-  border-color: var(--accent-dim);
+.tbr-item:first-child {
+  border-top: none;
 }
 
 .tbr-priority {
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
+  font-size: 0.66rem;
   font-weight: 700;
-  padding: 0.18rem 0.42rem;
-  border-radius: 3px;
-  letter-spacing: 0.05em;
+  padding: 0.12rem 0.38rem;
+  border-radius: var(--radius);
+  letter-spacing: 0.08em;
   flex-shrink: 0;
-  margin-top: 0.18rem;
+  border: 1px solid transparent;
 }
 
 .tbr-priority-p1 {
   color: var(--accent-contrast);
   background: var(--accent);
-  animation: priority-pulse 2.2s ease-out infinite;
 }
-
-/* per-theme priority tweaks removed; default animation/color remains */
 
 .tbr-priority-p2 {
   color: var(--accent);
-  background: color-mix(in oklab, var(--accent) 14%, transparent);
+  border-color: var(--accent);
 }
 
 .tbr-priority-p3 {
-  color: var(--accent);
-  background: color-mix(in oklab, var(--accent) 8%, transparent);
+  color: var(--text);
+  border-color: var(--border-strong);
 }
 
 .tbr-priority-p4 {
   color: var(--text-muted);
-  background: color-mix(in oklab, var(--text-muted) 10%, transparent);
+  border-color: var(--border);
 }
 
 .tbr-priority-p5 {
   color: var(--text-muted);
-  background: transparent;
   border: 1px dashed var(--border);
 }
 
@@ -1198,58 +1110,46 @@ textarea,
 
 .tbr-title {
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 0.92rem;
+  font-weight: 700;
+  font-size: 1.02rem;
 }
 
 .tbr-author {
   color: var(--text-muted);
-  font-size: 0.88rem;
-  font-style: italic;
 }
 
 .tbr-notes {
-  font-size: 0.85rem;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
   color: var(--text-muted);
-  margin-top: 0.2rem;
+  margin-top: 0.15rem;
 }
 
 /* =========================================================
-   Responsive fixes: mobile alignment and overflow
-   - Reduce horizontal padding on very narrow screens so cards appear centered
-   - Allow form controls and flex items to shrink to avoid horizontal scroll
-   - Improve word-wrapping for long titles/notes
+   Small screens and long words
    ========================================================= */
 
 @media (max-width: 600px) {
   .app {
-    padding-left: 0.9rem;
-    padding-right: 0.9rem;
+    padding: 1rem 1rem 3rem;
   }
 
-  /* ensure grid children stretch to container and are visually centered */
-  .author-grid,
-  .gr-grid {
-    padding: 0;
-    justify-items: stretch;
+  .masthead-bar {
+    justify-content: center;
   }
 
-  .author-card,
-  .gr-card {
-    width: 100%;
+  .app-toolbar {
+    justify-content: center;
   }
 }
 
-/* Allow form controls in TBR to shrink and avoid forcing a wider grid */
 .tbr-form input,
 .tbr-form select,
 .tbr-form button {
   min-width: 0;
   max-width: 100%;
-  box-sizing: border-box;
 }
 
-/* Ensure TBR and other list items don't cause horizontal overflow */
 .tbr-item,
 .book-item,
 .gr-card {
@@ -1265,7 +1165,6 @@ textarea,
   word-break: break-word;
 }
 
-/* Fallback: prevent accidental page-level horizontal scroll on tiny viewports */
 @media (max-width: 420px) {
   .app {
     overflow-x: hidden;

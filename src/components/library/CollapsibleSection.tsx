@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { CaretRight } from '@phosphor-icons/react'
 import { useCollapsed } from '../../hooks/useCollapsed'
 
 interface CollapsibleSectionProps {
@@ -28,9 +29,11 @@ export function CollapsibleSection({
         aria-expanded={!collapsed}
         onClick={toggle}
       >
-        <span className={`collapsible-chevron ${collapsed ? '' : 'collapsible-chevron-open'}`}>
-          ▶
-        </span>
+        <CaretRight
+          weight="light"
+          aria-hidden
+          className={`collapsible-chevron ${collapsed ? '' : 'collapsible-chevron-open'}`}
+        />
         <Header className="collapsible-title">
           {title}
           {count !== undefined && <span className="collapsible-count"> ({count})</span>}
