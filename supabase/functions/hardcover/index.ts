@@ -346,6 +346,32 @@ async function withPenNames(ids: number[]): Promise<Map<number, number>> {
   return owner
 }
 
+// Dismissals and accepted links only matter until the book is out: released
+// books are never suggested again. Drop them a month after the release period
+// ends (a margin for Hardcover correcting a wrong date). Undated rows stay, and
+// accepted rows stay while the book is still on the list (they drive date hints).
+async function cleanUp(db: SupabaseClient, now: Date): Promise<number> {
+  const cutoff = new Date(now.getTime() - 30 * 86400000).toISOString().slice(0, 10)
+  const [{ data: old }, { data: tracked }] = await Promise.all([
+    db
+      .from('book_suggestions')
+      .select('id, status, hardcover_book_id, release_date, date_precision')
+      .in('status', ['dismissed', 'accepted'])
+      .not('release_date', 'is', null)
+      .lt('release_date', cutoff),
+    db.from('books').select('hardcover_book_id').not('hardcover_book_id', 'is', null),
+  ])
+  const onList = new Set((tracked ?? []).map((b) => b.hardcover_book_id as number))
+  const ids = (old ?? [])
+    .filter((s) => releaseEnd(s.release_date, s.date_precision) < cutoff)
+    .filter((s) => s.status === 'dismissed' || !onList.has(s.hardcover_book_id))
+    .map((s) => s.id)
+  for (let i = 0; i < ids.length; i += 200) {
+    await db.from('book_suggestions').delete().in('id', ids.slice(i, i + 200))
+  }
+  return ids.length
+}
+
 interface LinkedAuthor {
   id: number
   hardcover_id: number | null
@@ -454,7 +480,14 @@ async function scan(db: SupabaseClient) {
   for (let i = 0; i < stale.length; i += 200) {
     await db.from('book_suggestions').delete().in('id', stale.slice(i, i + 200))
   }
-  const result = { checkedAt: now.toISOString(), authors: authors.length, books: rows.length, new: fresh }
+  const cleaned = await cleanUp(db, now)
+  const result = {
+    checkedAt: now.toISOString(),
+    authors: authors.length,
+    books: rows.length,
+    new: fresh,
+    cleaned,
+  }
   await db.from('app_state').upsert({ key: 'hardcover_scan', value: result, updated_at: result.checkedAt })
   return result
 }

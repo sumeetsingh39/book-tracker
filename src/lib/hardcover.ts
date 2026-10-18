@@ -27,6 +27,7 @@ export interface ScanResult {
   authors: number
   books: number
   new: number
+  cleaned?: number // old dismissals/links removed (see cleanUp in the function)
 }
 
 async function call<T>(body: Record<string, unknown>): Promise<T> {
