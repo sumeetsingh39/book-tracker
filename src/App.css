@@ -1072,15 +1072,24 @@ a {
 }
 
 @media (max-width: 600px) {
+  /* Date, then title and author, then status; the ⋯ menu sits top right
+     (as on author cards) so its list opens inward, not off the screen. */
   .release-item {
-    grid-template-columns: 1fr auto;
-  }
-  .release-date {
-    grid-column: 1 / -1;
+    position: relative;
+    grid-template-columns: 1fr;
+    padding-right: 2.25rem;
   }
   .release-side {
-    grid-column: 1 / -1;
     justify-self: start;
+  }
+  .release-item .book-menu {
+    position: absolute;
+    top: 0.35rem;
+    right: 0;
+  }
+  /* Suggestions keep their Track / Dismiss buttons in the row. */
+  .suggest-item {
+    padding-right: 0;
   }
   .form-row {
     grid-template-columns: 1fr;
@@ -1748,6 +1757,9 @@ a.gr-title:hover {
   }
 
   .masthead-bar {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.45rem;
     margin-bottom: 0.6rem;
     padding-bottom: 0.45rem;
   }
