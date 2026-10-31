@@ -5,8 +5,9 @@ import { AuthorCard } from './AuthorCard'
 import { Modal } from './Modal'
 import { AuthorForm } from './AuthorForm'
 import { BookForm } from './BookForm'
-import { CollapsibleSection } from './library/CollapsibleSection'
+import { CollapsibleSection } from './CollapsibleSection'
 import { LinkAuthors } from './LinkAuthors'
+import { describeError } from './Toast'
 
 interface AuthorsPageProps {
   isLoggedIn: boolean
@@ -81,7 +82,14 @@ export const AuthorsPage = forwardRef<AuthorsPageHandle, AuthorsPageProps>(
         )}
 
         {loading && authors.length === 0 && <p className="state-msg">Loading...</p>}
-        {error && <p className="state-msg error">Error: {error}</p>}
+        {error && (
+          <div className="state-msg error">
+            <p>{describeError('load your authors', error)}</p>
+            <button className="btn-small" onClick={refetch}>
+              Try again
+            </button>
+          </div>
+        )}
         {!loading && !error && authors.length === 0 && (
           <p className="state-msg">No authors found.</p>
         )}

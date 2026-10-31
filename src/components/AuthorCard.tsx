@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import { Plus } from '@phosphor-icons/react'
 import { supabase } from '../lib/supabase'
 import { Modal } from './Modal'
 import { AuthorForm } from './AuthorForm'
 import { BookForm } from './BookForm'
+import { ActionMenu } from './ActionMenu'
 import { BookActions } from './BookActions'
 import { LinkAuthors } from './LinkAuthors'
+import { useErrorToast } from './Toast'
 import { hardcoverAuthorUrl, hardcoverSeriesUrl } from '../lib/hardcover'
 import { displayStatus, formatRelease, STATUS_LABEL } from '../lib/release'
 import type { Author, Book } from '../lib/types'
@@ -21,11 +22,19 @@ export function AuthorCard({ author, isLoggedIn, onChanged }: AuthorCardProps) {
   const [addingBook, setAddingBook] = useState(false)
   const [editingBook, setEditingBook] = useState<Book | null>(null)
   const [linking, setLinking] = useState(false)
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const showError = useErrorToast()
+  const bookCount = author.books.length
 
+  // Deleting cascades to the author's books and suggestions, which an Undo
+  // could not rebuild faithfully, so this one asks first.
   const deleteAuthor = async () => {
-    if (!confirm(`Delete "${author.name}" and all their books?`)) return
+    setDeleting(true)
     const { error } = await supabase.from('authors').delete().eq('id', author.id)
-    if (error) alert(error.message)
+    setDeleting(false)
+    setConfirmingDelete(false)
+    if (error) showError(`delete ${author.name}`, error)
     else onChanged()
   }
 
@@ -34,6 +43,20 @@ export function AuthorCard({ author, isLoggedIn, onChanged }: AuthorCardProps) {
       <div className="author-card">
         <div className="author-header">
           <h3 className="author-name">{author.name}</h3>
+          {isLoggedIn && (
+            <ActionMenu
+              label={`Actions for ${author.name}`}
+              actions={[
+                { label: 'Add book', onSelect: () => setAddingBook(true) },
+                { label: 'Edit author', onSelect: () => setEditingAuthor(true) },
+                {
+                  label: author.hardcover_status === 'linked' ? 'Relink Hardcover' : 'Link to Hardcover',
+                  onSelect: () => setLinking(true),
+                },
+                { label: 'Delete author', onSelect: () => setConfirmingDelete(true), danger: true },
+              ]}
+            />
+          )}
           <div className="author-links">
             {author.goodreads_url && (
               <a
@@ -91,10 +114,9 @@ export function AuthorCard({ author, isLoggedIn, onChanged }: AuthorCardProps) {
               <li key={book.id} className="book-item">
                 <div className="book-main">
                   <span className="book-title">{book.title}</span>
-                  <span className="book-meta">
-                    <span className={`book-status status-${displayStatus(book)}`}>
-                      {STATUS_LABEL[displayStatus(book)]}
-                    </span>
+                  <span className={`book-meta status-${displayStatus(book)}`}>
+                    <span className="status-dot" aria-hidden />
+                    <span className="book-status">{STATUS_LABEL[displayStatus(book)]}</span>
                     <span className="book-date">
                       {formatRelease(book.release_date, book.date_precision)}
                     </span>
@@ -114,31 +136,25 @@ export function AuthorCard({ author, isLoggedIn, onChanged }: AuthorCardProps) {
           <p className="no-books">No upcoming books</p>
         )}
 
-        {isLoggedIn && (
-          <div className="card-actions">
-            <button className="btn-small" onClick={() => setAddingBook(true)}>
-              <Plus weight="bold" aria-hidden /> Book
-            </button>
-            <button className="btn-small" onClick={() => setEditingAuthor(true)}>
-              Edit
-            </button>
-            <button
-              className="btn-small"
-              onClick={() => setLinking(true)}
-              title={
-                author.hardcover_status === 'linked'
-                  ? 'Linked to Hardcover; change which author it is'
-                  : 'Link to Hardcover so new books are found'
-              }
-            >
-              {author.hardcover_status === 'linked' ? 'Relink' : 'Link Hardcover'}
-            </button>
-            <button className="btn-small btn-danger" onClick={deleteAuthor}>
-              Delete
-            </button>
-          </div>
-        )}
       </div>
+
+      <Modal open={confirmingDelete} onClose={() => setConfirmingDelete(false)} title="Delete author?">
+        <p className="confirm-text">
+          <strong>{author.name}</strong>
+          {bookCount > 0
+            ? ` and ${bookCount === 1 ? 'their 1 tracked book' : `all ${bookCount} of their tracked books`} will be deleted.`
+            : ' will be deleted.'}{' '}
+          This can’t be undone.
+        </p>
+        <div className="form-actions">
+          <button className="btn-secondary" onClick={() => setConfirmingDelete(false)}>
+            Cancel
+          </button>
+          <button className="btn-destructive" onClick={deleteAuthor} disabled={deleting}>
+            {deleting ? 'Deleting…' : 'Delete author'}
+          </button>
+        </div>
+      </Modal>
 
       <Modal open={linking} onClose={() => setLinking(false)} title="Link to Hardcover">
         {linking && (

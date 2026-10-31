@@ -18,6 +18,11 @@ function readPref(): ThemePref {
 function apply(pref: ThemePref) {
   const dark = pref === 'dark' || (pref === 'system' && darkQuery().matches)
   document.documentElement.dataset.theme = dark ? 'dark' : 'light'
+  // Browser chrome (the phone's status bar) follows the chosen theme, not
+  // only the system one. Keep in step with --bg in App.css.
+  for (const meta of document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')) {
+    meta.content = dark ? '#131513' : '#efebe4'
+  }
 }
 
 export function useTheme() {

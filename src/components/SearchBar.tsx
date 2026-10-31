@@ -34,17 +34,20 @@ export function SearchBar({
           className="search-input"
         />
         <span className="count">
-          {filteredCount} / {totalCount}
+          {filteredCount === totalCount
+            ? `${totalCount} ${totalCount === 1 ? 'author' : 'authors'}`
+            : `${filteredCount} of ${totalCount}`}
         </span>
       </div>
       <div className="filter-row">
         <div className="filter-group">
           <label>Filter:</label>
           <select
+            aria-label="Filter authors"
             value={filterStatus}
             onChange={(e) => onFilterChange(e.target.value as FilterStatus)}
           >
-            <option value="all">All</option>
+            <option value="all">All authors</option>
             <option value="due">Due</option>
             <option value="upcoming">Upcoming</option>
             <option value="overdue">Overdue</option>
@@ -55,6 +58,7 @@ export function SearchBar({
         <div className="filter-group">
           <label>Sort:</label>
           <select
+            aria-label="Sort authors"
             value={sortField}
             onChange={(e) => onSortChange(e.target.value as SortField)}
           >

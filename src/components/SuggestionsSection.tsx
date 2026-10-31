@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabase'
-import { formatRelease } from '../lib/release'
+import { bucketOf, formatRelease } from '../lib/release'
 import { hardcoverBookUrl } from '../lib/hardcover'
-import { CollapsibleSection } from './library/CollapsibleSection'
-import { useToast } from './Toast'
-import type { Suggestion } from '../lib/types'
+import { CollapsibleSection } from './CollapsibleSection'
+import { useErrorToast, useToast } from './Toast'
+import type { Book, Suggestion } from '../lib/types'
 
 interface SuggestionsSectionProps {
   inbox: Suggestion[]
@@ -16,6 +16,10 @@ interface SuggestionsSectionProps {
   reload: () => Promise<unknown>
   onBooksChanged: () => void
 }
+
+// Which Releases bucket the book would land in once tracked, for its status dot.
+const suggestionBucket = (s: Suggestion) =>
+  bucketOf({ release_date: s.release_date, date_precision: s.date_precision, status: 'upcoming' } as Book)
 
 function checkedAgo(iso: string): string {
   const mins = Math.round((Date.now() - new Date(iso).getTime()) / 60000)
@@ -37,6 +41,7 @@ export function SuggestionsSection({
   onBooksChanged,
 }: SuggestionsSectionProps) {
   const toast = useToast()
+  const showError = useErrorToast()
   // Suggestions with a Track/Dismiss in flight: a second click must not add the book twice.
   const [busy, setBusy] = useState<Set<number>>(new Set())
   const dated = inbox.filter((s) => s.release_date)
@@ -45,7 +50,7 @@ export function SuggestionsSection({
   const dismissAll = async (items: Suggestion[]) => {
     const ids = items.map((s) => s.id)
     const { error: err } = await supabase.from('book_suggestions').update({ status: 'dismissed' }).in('id', ids)
-    if (err) return alert(err.message)
+    if (err) return showError('dismiss those suggestions', err)
     await reload()
     toast(`Dismissed ${ids.length} suggestions`, async () => {
       await supabase.from('book_suggestions').update({ status: 'new' }).in('id', ids)
@@ -54,29 +59,34 @@ export function SuggestionsSection({
   }
 
   const row = (s: Suggestion) => (
-    <li key={s.id} className="release-item suggest-item">
-      <span className="release-date">{formatRelease(s.release_date, s.date_precision)}</span>
+    <li key={s.id} className={`release-item suggest-item release-${suggestionBucket(s)}`}>
       <div className="release-main">
         <span className="release-title">{s.title}</span>
-        <span className="release-author">
-          {s.authors?.name}
-          {s.hardcover_slug && (
-            <>
-              {' · '}
-              <a
-                className="suggest-link"
-                href={hardcoverBookUrl(s.hardcover_slug)}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {s.readers} {s.readers === 1 ? 'reader' : 'readers'} on Hardcover
-              </a>
-            </>
-          )}
+        <span className="release-meta">
+          <span className="release-author">
+            {s.authors?.name}
+            {s.hardcover_slug && (
+              <>
+                {' · '}
+                <a
+                  className="suggest-link"
+                  href={hardcoverBookUrl(s.hardcover_slug)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {s.readers} {s.readers === 1 ? 'reader' : 'readers'} on Hardcover
+                </a>
+              </>
+            )}
+          </span>
+          <span className="release-date">
+            <span className="status-dot" aria-hidden />
+            {formatRelease(s.release_date, s.date_precision)}
+          </span>
         </span>
       </div>
-      <div className="release-side">
-        <button className="btn-small" disabled={busy.has(s.id)} onClick={() => accept(s)}>
+      <div className="suggest-actions">
+        <button className="btn-small btn-primary" disabled={busy.has(s.id)} onClick={() => accept(s)}>
           Track
         </button>
         <button className="btn-small btn-secondary" disabled={busy.has(s.id)} onClick={() => dismiss(s)}>
@@ -92,7 +102,7 @@ export function SuggestionsSection({
     try {
       await fn(s)
     } catch (e) {
-      alert(e instanceof Error ? e.message : String(e))
+      showError(`update “${s.title}”`, e)
     } finally {
       setBusy((b) => {
         const n = new Set(b)

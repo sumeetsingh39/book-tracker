@@ -28,3 +28,6 @@ dist-ssr
 
 # Supabase CLI state
 supabase/.temp
+
+# Impeccable design-tool state (critiques, live-mode sessions)
+.impeccable/

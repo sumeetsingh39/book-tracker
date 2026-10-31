@@ -3,19 +3,18 @@ import { useAuthors } from '../hooks/useAuthors'
 import { useSuggestions } from '../hooks/useSuggestions'
 import { supabase } from '../lib/supabase'
 import { SuggestionsSection } from './SuggestionsSection'
-import { CollapsibleSection } from './library/CollapsibleSection'
+import { CollapsibleSection } from './CollapsibleSection'
 import { BookActions } from './BookActions'
 import { BookForm } from './BookForm'
 import { Modal } from './Modal'
+import { describeError, useErrorToast, useToast } from './Toast'
 import {
   BUCKETS,
   bucketOf,
-  displayStatus,
   formatRelease,
   releaseEnd,
   releaseSortKey,
   today,
-  STATUS_LABEL,
   type Bucket,
 } from '../lib/release'
 import type { Book, DatePrecision, Suggestion } from '../lib/types'
@@ -59,8 +58,13 @@ function hardcoverDiffers(book: Book, s: Suggestion | undefined): s is Suggestio
   return !within || PRECISION_RANK[s.date_precision] > PRECISION_RANK[book.date_precision]
 }
 
-// Sections that start collapsed until opened once.
-const COLLAPSED_BY_DEFAULT: Bucket[] = ['later', 'unknown']
+// Sections that start collapsed until opened once. Overdue is only waiting on
+// availability, so it stays out of the way.
+const COLLAPSED_BY_DEFAULT: Bucket[] = ['overdue', 'later', 'unknown']
+
+// Overdue started out open; a fresh key lets the collapsed default apply to
+// browsers that already stored it open.
+const storageKeyFor = (b: Bucket) => (b === 'overdue' ? 'releases-overdue-waiting' : `releases-${b}`)
 
 export const ReleasesPage = forwardRef<ReleasesPageHandle, ReleasesPageProps>(
   function ReleasesPage({ isLoggedIn, onDueCount }, ref) {
@@ -69,6 +73,8 @@ export const ReleasesPage = forwardRef<ReleasesPageHandle, ReleasesPageProps>(
     const [adding, setAdding] = useState(false)
     const [query, setQuery] = useState('')
     const suggestions = useSuggestions(isLoggedIn, refetch)
+    const toast = useToast()
+    const showError = useErrorToast()
 
     const applyHardcoverDate = async (book: Book, s: Suggestion) => {
       const update: Partial<Book> = { release_date: s.release_date, date_precision: s.date_precision }
@@ -76,8 +82,17 @@ export const ReleasesPage = forwardRef<ReleasesPageHandle, ReleasesPageProps>(
         update.status = 'upcoming'
       }
       const { error: err } = await supabase.from('books').update(update).eq('id', book.id)
-      if (err) return alert(err.message)
+      if (err) return showError(`change the date of “${book.title}”`, err)
       refetch()
+      toast(`“${book.title}” now follows Hardcover’s date`, async () => {
+        const { release_date, date_precision, status } = book
+        const { error: undoErr } = await supabase
+          .from('books')
+          .update({ release_date, date_precision, status })
+          .eq('id', book.id)
+        if (undoErr) showError('undo that', undoErr)
+        refetch()
+      })
     }
 
     useImperativeHandle(ref, () => ({
@@ -120,8 +135,70 @@ export const ReleasesPage = forwardRef<ReleasesPageHandle, ReleasesPageProps>(
       }))
     }, [authors, query])
 
+    const searching = query.trim() !== ''
+
+    const renderGroup = (group: (typeof groups)[number]) => (
+      <CollapsibleSection
+        key={group.value}
+        storageKey={storageKeyFor(group.value)}
+        title={group.label}
+        count={group.entries.length}
+        defaultCollapsed={COLLAPSED_BY_DEFAULT.includes(group.value)}
+        forceOpen={searching}
+      >
+        {HINTS[group.value] && <p className="release-hint">{HINTS[group.value]}</p>}
+        <ul className="release-list">
+          {group.entries.map(({ book, authorName }) => {
+            const hc = book.hardcover_book_id
+              ? suggestions.byHardcoverBook.get(book.hardcover_book_id)
+              : undefined
+            return (
+              <li key={book.id} className={`release-item release-${group.value}`}>
+                <div className="release-main">
+                  <span className="release-title">{book.title}</span>
+                  <span className="release-meta">
+                    <span className="release-author">{authorName}</span>
+                    <span className="release-date">
+                      <span className="status-dot" aria-hidden />
+                      {formatRelease(book.release_date, book.date_precision)}
+                    </span>
+                  </span>
+                  {isLoggedIn && hardcoverDiffers(book, hc) && (
+                    <span className="hc-hint">
+                      Hardcover says {formatRelease(hc.release_date, hc.date_precision)}
+                      {' · '}
+                      <button className="hc-hint-use" onClick={() => applyHardcoverDate(book, hc)}>
+                        Use it
+                      </button>
+                    </span>
+                  )}
+                </div>
+                {isLoggedIn && (
+                  <BookActions
+                    book={book}
+                    onEdit={() => setEditing(book)}
+                    onChanged={refetch}
+                  />
+                )}
+              </li>
+            )
+          })}
+        </ul>
+      </CollapsibleSection>
+    )
+
+    const dueGroup = groups.find((g) => g.value === 'due')
+
     if (loading && authors.length === 0) return <p className="state-msg">Loading...</p>
-    if (error) return <p className="state-msg error">Error: {error}</p>
+    if (error)
+      return (
+        <div className="state-msg error">
+          <p>{describeError('load your books', error)}</p>
+          <button className="btn-small" onClick={refetch}>
+            Try again
+          </button>
+        </div>
+      )
 
     return (
       <div className="releases-page">
@@ -139,6 +216,24 @@ export const ReleasesPage = forwardRef<ReleasesPageHandle, ReleasesPageProps>(
           </div>
         </div>
 
+        {groups.length === 0 && (
+          <p className="state-msg">
+            {query
+              ? 'Nothing matches that search.'
+              : isLoggedIn
+                ? 'No books tracked yet. Add one with the + button at the top.'
+                : 'No books tracked yet.'}
+          </p>
+        )}
+
+        {dueGroup && renderGroup(dueGroup)}
+        {!dueGroup && !searching && groups.length > 0 && (
+          <p className="next-up">
+            <span className="status-dot" aria-hidden />
+            Nothing due. You’re all caught up.
+          </p>
+        )}
+
         {isLoggedIn && (
           <SuggestionsSection
             inbox={suggestions.inbox}
@@ -151,65 +246,7 @@ export const ReleasesPage = forwardRef<ReleasesPageHandle, ReleasesPageProps>(
             onBooksChanged={refetch}
           />
         )}
-
-        {groups.length === 0 && (
-          <p className="state-msg">
-            {query ? 'Nothing matches that search.' : 'No books tracked yet. Use + Book to add one.'}
-          </p>
-        )}
-
-        {groups.map((group) => (
-          <CollapsibleSection
-            key={group.value}
-            storageKey={`releases-${group.value}`}
-            title={group.label}
-            count={group.entries.length}
-            defaultCollapsed={COLLAPSED_BY_DEFAULT.includes(group.value)}
-            forceOpen={query.trim() !== ''}
-          >
-            {HINTS[group.value] && <p className="release-hint">{HINTS[group.value]}</p>}
-            <ul className="release-list">
-              {group.entries.map(({ book, authorName }) => {
-                const status = displayStatus(book)
-                const hc = book.hardcover_book_id
-                  ? suggestions.byHardcoverBook.get(book.hardcover_book_id)
-                  : undefined
-                return (
-                  <li key={book.id} className="release-item">
-                    <span className="release-date">
-                      {formatRelease(book.release_date, book.date_precision)}
-                    </span>
-                    <div className="release-main">
-                      <span className="release-title">{book.title}</span>
-                      <span className="release-author">{authorName}</span>
-                      {isLoggedIn && hardcoverDiffers(book, hc) && (
-                        <span className="hc-hint">
-                          Hardcover says {formatRelease(hc.release_date, hc.date_precision)}
-                          {' · '}
-                          <button className="hc-hint-use" onClick={() => applyHardcoverDate(book, hc)}>
-                            Use it
-                          </button>
-                        </span>
-                      )}
-                    </div>
-                    <div className="release-side">
-                      <span className={`book-status status-${status}`}>
-                        {STATUS_LABEL[status]}
-                      </span>
-                      {isLoggedIn && (
-                        <BookActions
-                          book={book}
-                          onEdit={() => setEditing(book)}
-                          onChanged={refetch}
-                        />
-                      )}
-                    </div>
-                  </li>
-                )
-              })}
-            </ul>
-          </CollapsibleSection>
-        ))}
+        {groups.filter((g) => g !== dueGroup).map(renderGroup)}
 
         <Modal open={adding} onClose={() => setAdding(false)} title="Add Book">
           <BookForm

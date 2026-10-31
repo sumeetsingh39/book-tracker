@@ -7,11 +7,12 @@ export type DisplayStatus = 'upcoming' | 'due' | 'overdue' | 'unknown'
 
 export type Bucket = 'due' | 'overdue' | 'this-month' | 'soon' | 'later' | 'unknown'
 
+// Page order: what needs you, then what's coming, then what you're only waiting on.
 export const BUCKETS: { value: Bucket; label: string }[] = [
   { value: 'due', label: 'Due now' },
-  { value: 'overdue', label: 'Overdue' },
   { value: 'this-month', label: 'This month' },
   { value: 'soon', label: 'Next three months' },
+  { value: 'overdue', label: 'Overdue' },
   { value: 'later', label: 'Later' },
   { value: 'unknown', label: 'Date unknown' },
 ]
